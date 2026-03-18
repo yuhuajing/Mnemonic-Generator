@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BIP86 Verification</title>
+  <style>
+    body { font-family: 'Consolas', monospace; padding: 20px; background: #0a0a0a; color: #e0e0e0; }
+    .ok { color: #00ff41; }
+    .fail { color: #ff3333; }
+    .gold { color: #d4af37; }
+    pre { background: #1a1a1a; padding: 15px; border-left: 3px solid #d4af37; overflow-x: auto; }
+    h1 { color: #d4af37; }
+    input, button { font-family: inherit; padding: 10px; margin: 5px 0; }
+    input { width: 100%; background: #1a1a1a; border: 1px solid #333; color: #e0e0e0; }
+    button { background: #d4af37; color: #0a0a0a; border: none; cursor: pointer; }
+    button:hover { background: #ffd700; }
+  </style>
+</head>
+<body>
+  <h1>BIP86 Taproot Verification</h1>
+
+  <div>
+    <label>Mnemonic:</label>
+    <input type="text" id="mnemonic" value="abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about">
+    <label>Expected Address (optional):</label>
+    <input type="text" id="expected" value="bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr">
+    <button onclick="runTest()">Verify</button>
+  </div>
+
+  <pre id="output">Loading libraries...</pre>
+
+  <script type="module">
+    // Load libraries
+    const secp = await import('https://esm.sh/@noble/secp256k1@2.0.0');
+    const { sha256 } = await import('https://esm.sh/@noble/hashes@1.3.3/sha256');
+    const { sha512 } = await import('https://esm.sh/@noble/hashes@1.3.3/sha512');
+    const { pbkdf2 } = await import('https://esm.sh/@noble/hashes@1.3.3/pbkdf2');
+    const { hmac } = await import('https://esm.sh/@noble/hashes@1.3.3/hmac');
+
+    // Make libraries available globally
+    window.cryptoLibs = { secp, sha256, sha512, pbkdf2, hmac };
+    document.getElementById('output').textContent = 'Libraries loaded. Click "Verify" to test.';
+
+    // Helper functions
+    const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+    const hexToBytes = h => { const a = new Uint8Array(h.length / 2); for (let i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16); return a; };
+    const utf8 = s => new TextEncoder().encode(s);
+    const hmacSHA512 = (k, d) => hmac(sha512, k, d);
+
+    // BIP32 constants
+    const HARDENED = 0x80000000;
+    const N = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141');
+    const u32 = n => new Uint8Array([(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]);
+    const addKeys = (a, b) => hexToBytes(((BigInt('0x' + bytesToHex(a)) + BigInt('0x' + bytesToHex(b))) % N).toString(16).padStart(64, '0'));
+
+    // HDNode
+    class HDNode {
+      constructor(priv, chain) { this.priv = priv; this.chain = chain; }
+      static fromSeed(seed) {
+        const I = hmacSHA512(utf8('Bitcoin seed'), seed);
+        return new HDNode(I.slice(0, 32), I.slice(32));
+      }
+      pub() { return secp.getPublicKey(this.priv, true); }
+      child(i) {
+        const data = new Uint8Array(37);
+        if (i >= HARDENED) { data[0] = 0; data.set(this.priv, 1); }
+        else { data.set(this.pub(), 0); }
+        data.set(u32(i), 33);
+        const I = hmacSHA512(this.chain, data);
+        return new HDNode(addKeys(I.slice(0, 32), this.priv), I.slice(32));
+      }
+      derive(path) {
+        return path.split('/').slice(1).reduce((n, s) => {
+          const h = s.endsWith("'");
+          return n.child(parseInt(s) + (h ? HARDENED : 0));
+        }, this);
+      }
+    }
+
+    // Tagged hash
+    const taggedHash = (tag, msg) => {
+      const th = sha256(utf8(tag));
+      const data = new Uint8Array(64 + msg.length);
+      data.set(th, 0);
+      data.set(th, 32);
+      data.set(msg, 64);
+      return sha256(data);
+    };
+
+    // Bech32m
+    const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+    const GEN = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+    const polymod = v => { let c = 1; for (const x of v) { const t = c >> 25; c = ((c & 0x1ffffff) << 5) ^ x; for (let i = 0; i < 5; i++) if ((t >> i) & 1) c ^= GEN[i]; } return c; };
+    const hrpExpand = h => [...h].map(c => c.charCodeAt(0) >> 5).concat([0]).concat([...h].map(c => c.charCodeAt(0) & 31));
+    const bech32m = (hrp, data) => {
+      const v = hrpExpand(hrp).concat(data).concat([0,0,0,0,0,0]);
+      const p = polymod(v) ^ 0x2bc830a3;
+      const cs = [0,1,2,3,4,5].map(i => (p >> (5 * (5 - i))) & 31);
+      return hrp + '1' + data.concat(cs).map(d => CHARSET[d]).join('');
+    };
+    const convertBits = (data, from, to) => {
+      let acc = 0, bits = 0, result = [];
+      for (const v of data) { acc = (acc << from) | v; bits += from; while (bits >= to) { bits -= to; result.push((acc >> bits) & ((1 << to) - 1)); } }
+      if (bits > 0) result.push((acc << (to - bits)) & ((1 << to) - 1));
+      return result;
+    };
+
+    window.runTest = async function() {
+      const out = document.getElementById('output');
+      out.innerHTML = '';
+      const log = (m, c = '') => out.innerHTML += `<span class="${c}">${m}</span>\n`;
+
+      try {
+        const mnemonic = document.getElementById('mnemonic').value.trim();
+        const expected = document.getElementById('expected').value.trim();
+
+        log('=== BIP86 Taproot Derivation ===\n', 'gold');
+        log('Mnemonic: ' + mnemonic);
+
+        // Seed
+        const seed = pbkdf2(sha512, utf8(mnemonic), utf8('mnemonic'), { c: 2048, dkLen: 64 });
+        log('Seed: ' + bytesToHex(seed).substring(0, 40) + '...');
+
+        // Derive m/86'/0'/0'/0/0
+        const root = HDNode.fromSeed(seed);
+        const node = root.derive("m/86'/0'/0'/0/0");
+        log('Private key: ' + bytesToHex(node.priv));
+
+        const pubkey = node.pub();
+        log('Public key: ' + bytesToHex(pubkey));
+        log('Prefix: 0x' + pubkey[0].toString(16) + ' (even Y: ' + (pubkey[0] === 0x02) + ')');
+
+        // Internal key (x-only)
+        const xOnly = pubkey.slice(1);
+        log('\nInternal key: ' + bytesToHex(xOnly));
+
+        // Tweak
+        const tweak = taggedHash('TapTweak', xOnly);
+        log('Tweak: ' + bytesToHex(tweak));
+
+        // Use even Y version
+        let workingKey = pubkey;
+        if (pubkey[0] !== 0x02) {
+          workingKey = new Uint8Array(33);
+          workingKey[0] = 0x02;
+          workingKey.set(xOnly, 1);
+          log('(Negated to even Y)');
+        }
+
+        // Q = P + tweak*G
+        const Point = secp.ProjectivePoint;
+        const tweakBigInt = BigInt('0x' + bytesToHex(tweak));
+        const P = Point.fromHex(bytesToHex(workingKey));
+        const T = Point.BASE.multiply(tweakBigInt);
+        const Q = P.add(T);
+
+        const Qbytes = Q.toRawBytes(true);
+        log('Tweaked pubkey: ' + bytesToHex(Qbytes));
+
+        const outputKey = Qbytes.slice(1);
+        log('Output key: ' + bytesToHex(outputKey));
+
+        // Bech32m address
+        const words = convertBits(Array.from(outputKey), 8, 5);
+        const address = bech32m('bc', [0x01].concat(words));
+
+        log('\n=== Result ===\n', 'gold');
+        log('Generated: ' + address, address === expected ? 'ok' : '');
+        log('Expected:  ' + expected);
+
+        if (address === expected) {
+          log('\n✓ Address matches!', 'ok');
+        } else {
+          log('\n✗ Address does NOT match!', 'fail');
+        }
+
+      } catch (e) {
+        log('Error: ' + e.message, 'fail');
+        console.error(e);
+      }
+    };
+  </script>
+</body>
+</html>

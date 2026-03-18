@@ -1,0 +1,4257 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Secure offline mnemonic generator for Bitcoin, Ethereum, Solana, and Tron"
+        />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline' data:; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:;"
+        />
+        <title>Mnemonic Generator - Secure HD Wallet Tool</title>
+        <style>
+            /**
+ * Mnemonic Generator - Vault Theme (Crypto Vault Style)
+ * A unique design that breaks away from typical AI-generated UIs
+ */
+
+            /* ========== CSS Reset & Base ========== */
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                /* Vault Color Palette - Dark with Gold Accents */
+                --vault-black: #0a0a0a;
+                --vault-dark: #151515;
+                --vault-gray: #1f1f1f;
+                --vault-border: #2a2a2a;
+
+                --vault-gold: #d4af37;
+                --vault-gold-dim: #8b7530;
+                --vault-gold-bright: #ffd700;
+
+                --vault-green: #00ff41;
+                --vault-green-dim: #00cc33;
+
+                --vault-red: #ff3333;
+                --vault-blue: #00bfff;
+
+                --text-primary: #e8e8e8;
+                --text-secondary: #a0a0a0;
+                --text-dim: #606060;
+
+                /* Typography - Monospace for that vault/terminal feel */
+                --font-mono: "Consolas", "Monaco", "Courier New", monospace;
+                --font-sans: "Trebuchet MS", "Segoe UI", "Tahoma", sans-serif;
+
+                /* Radius & Shadow */
+                --radius-sm: 6px;
+                --radius-md: 12px;
+                --radius-lg: 16px;
+                --shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.45);
+                --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+                /* Spacing */
+                --space-xs: 0.5rem;
+                --space-sm: 0.75rem;
+                --space-md: 1rem;
+                --space-lg: 1.5rem;
+                --space-xl: 2rem;
+                --space-2xl: 3rem;
+            }
+
+            body {
+                font-family: var(--font-sans);
+                background: var(--vault-black);
+                color: var(--text-primary);
+                line-height: 1.6;
+                min-height: 100vh;
+                position: relative;
+                overflow-x: hidden;
+            }
+
+            /* Animated grid background */
+            body::before {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image:
+                    radial-gradient(
+                        circle at 10% 10%,
+                        rgba(212, 175, 55, 0.08),
+                        transparent 45%
+                    ),
+                    radial-gradient(
+                        circle at 90% 20%,
+                        rgba(0, 191, 255, 0.08),
+                        transparent 40%
+                    ),
+                    linear-gradient(
+                        rgba(212, 175, 55, 0.03) 1px,
+                        transparent 1px
+                    ),
+                    linear-gradient(
+                        90deg,
+                        rgba(212, 175, 55, 0.03) 1px,
+                        transparent 1px
+                    );
+                background-size:
+                    100% 100%,
+                    100% 100%,
+                    50px 50px,
+                    50px 50px;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            /* Scanline effect */
+            body::after {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(
+                    to bottom,
+                    transparent 50%,
+                    rgba(0, 0, 0, 0.1) 50%
+                );
+                background-size: 100% 4px;
+                pointer-events: none;
+                z-index: 1;
+                animation: scanline 8s linear infinite;
+            }
+
+            @keyframes scanline {
+                0% {
+                    transform: translateY(0);
+                }
+                100% {
+                    transform: translateY(4px);
+                }
+            }
+
+            /* ========== Layout ========== */
+
+            #app {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: var(--space-lg);
+                position: relative;
+                z-index: 2;
+            }
+
+            @media (min-width: 768px) {
+                #app {
+                    padding: var(--space-2xl);
+                }
+            }
+
+            /* ========== Header ========== */
+
+            .header {
+                text-align: center;
+                margin-bottom: var(--space-2xl);
+                padding: var(--space-xl) 0;
+                border-bottom: 2px solid var(--vault-gold);
+                position: relative;
+            }
+
+            .header::before,
+            .header::after {
+                content: "�?;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--vault-gold);
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+.header::before { left: 0; }
+.header::after { right: 0; }
+
+.header h1 {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--vault-gold);
+  text-shadow:
+    0 0 10px rgba(212, 175, 55, 0.5),
+    0 0 20px rgba(212, 175, 55, 0.3),
+    0 0 30px rgba(212, 175, 55, 0.1);
+  margin-bottom: var(--space-sm);
+}
+
+@media (min-width: 768px) {
+  .header h1 {
+    font-size: 3rem;
+  }
+}
+
+.header p {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.security-warning {
+  background: linear-gradient(90deg, rgba(255, 51, 51, 0.08), rgba(255, 51, 51, 0.02));
+  border: 1px solid var(--vault-red);
+  border-left: 4px solid var(--vault-red);
+  padding: var(--space-md);
+  margin: var(--space-lg) 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  position: relative;
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.security-warning::before {
+  content: "
+                    !
+                    ";
+  position: static;
+  background: var(--vault-red);
+  color: var(--vault-black);
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  border-radius: 50%;
+  flex: 0 0 24px;
+}
+.security-warning strong {
+  color: var(--vault-red);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ========== Cards ========== */
+
+.card {
+  background: linear-gradient(145deg, rgba(31, 31, 31, 0.9), rgba(16, 16, 16, 0.9));
+  border: 1px solid var(--vault-border);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  position: relative;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-strong);
+}
+
+.card::before {
+  content: "
+                    ";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--vault-gold) 50%,
+    transparent
+  );
+}
+
+.card-title {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+  color: var(--vault-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.card-title::before {
+  content: "
+                    �?;
+                color: var(--vault-gold);
+                font-size: 1.2rem;
+            }
+
+            /* ========== Buttons ========== */
+
+            .button {
+                font-family: var(--font-mono);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: var(--space-xs);
+                padding: 0.7rem 1.8rem;
+                border: 1px solid;
+                background: transparent;
+                font-size: 0.85rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                min-height: 44px;
+                border-radius: var(--radius-sm);
+            }
+
+            .button::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.1),
+                    transparent
+                );
+                transition: left 0.5s ease;
+            }
+
+            .button:hover::before {
+                left: 100%;
+            }
+
+            .button:active {
+                transform: translateY(1px);
+            }
+
+            .button:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+
+            .button-primary {
+                border-color: var(--vault-gold);
+                color: var(--vault-gold);
+            }
+
+            .button-primary:hover:not(:disabled) {
+                background: var(--vault-gold);
+                color: var(--vault-black);
+                box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            }
+
+            .button-secondary {
+                border-color: var(--vault-border);
+                color: var(--text-secondary);
+            }
+
+            .button-secondary:hover:not(:disabled) {
+                border-color: var(--text-primary);
+                color: var(--text-primary);
+            }
+
+            .button-success {
+                border-color: var(--vault-green);
+                color: var(--vault-green);
+            }
+
+            .button-success:hover:not(:disabled) {
+                background: var(--vault-green);
+                color: var(--vault-black);
+            }
+
+            .button-small {
+                padding: 0.5rem 1.2rem;
+                font-size: 0.75rem;
+                min-height: 36px;
+            }
+
+            .button-group {
+                display: flex;
+                gap: var(--space-sm);
+                flex-wrap: wrap;
+            }
+
+            /* ========== Form Elements ========== */
+
+            .form-group {
+                margin-bottom: var(--space-lg);
+            }
+
+            .form-label {
+                display: block;
+                font-family: var(--font-mono);
+                font-weight: 500;
+                margin-bottom: var(--space-xs);
+                color: var(--vault-gold);
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .form-input {
+                width: 100%;
+                padding: 0.7rem;
+                background: var(--vault-black);
+                border: 1px solid var(--vault-border);
+                color: var(--text-primary);
+                font-family: var(--font-mono);
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                border-radius: var(--radius-sm);
+            }
+
+            .form-input:focus {
+                outline: none;
+                border-color: var(--vault-gold);
+                box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+            }
+
+            .form-input::placeholder {
+                color: var(--text-dim);
+            }
+
+            textarea.form-input {
+                resize: vertical;
+                min-height: 100px;
+                line-height: 1.5;
+            }
+
+            select.form-input {
+                cursor: pointer;
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4af37' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 0.7rem center;
+                padding-right: 2.5rem;
+            }
+
+            .form-hint {
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+                color: var(--text-dim);
+                margin-top: var(--space-xs);
+            }
+
+            #passphraseSection .form-group > div {
+                align-items: center;
+            }
+
+            @media (max-width: 600px) {
+                #passphraseSection .form-group > div {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+            }
+
+            /* ========== Tabs ========== */
+
+            .tabs {
+                display: flex;
+                gap: 0;
+                border-bottom: 1px solid var(--vault-border);
+                margin-bottom: var(--space-lg);
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                background: linear-gradient(
+                    180deg,
+                    rgba(21, 21, 21, 0.8),
+                    rgba(10, 10, 10, 0.8)
+                );
+                border-radius: var(--radius-md);
+                padding: 0.25rem;
+            }
+
+            .tab {
+                font-family: var(--font-mono);
+                padding: 0.8rem 1.5rem;
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid transparent;
+                color: var(--text-dim);
+                font-size: 0.85rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                white-space: nowrap;
+                position: relative;
+                border-radius: var(--radius-sm);
+            }
+
+            .tab::after {
+                content: "";
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: var(--vault-gold);
+                transform: scaleX(0);
+                transition: transform 0.3s ease;
+            }
+
+            .tab:hover {
+                color: var(--text-secondary);
+            }
+
+            .tab.active {
+                color: var(--vault-gold);
+                background: rgba(212, 175, 55, 0.08);
+            }
+
+            .tab.active::after {
+                transform: scaleX(1);
+            }
+
+            /* ========== Mnemonic Display ========== */
+
+            .mnemonic-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: var(--space-sm);
+                margin: var(--space-lg) 0;
+            }
+
+            .mnemonic-word {
+                background: var(--vault-black);
+                border: 1px solid var(--vault-border);
+                padding: 0.8rem;
+                text-align: center;
+                font-family: var(--font-mono);
+                font-size: 0.9rem;
+                position: relative;
+                transition: all 0.3s ease;
+                border-radius: var(--radius-sm);
+            }
+
+            .mnemonic-word:hover {
+                border-color: var(--vault-gold);
+                transform: translateY(-2px);
+            }
+
+            .mnemonic-word-index {
+                display: block;
+                font-size: 0.7rem;
+                color: var(--text-dim);
+                margin-bottom: 0.25rem;
+                font-weight: 600;
+            }
+
+            .mnemonic-word-text {
+                font-weight: 600;
+                color: var(--vault-gold);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            /* ========== Address Table ========== */
+
+            .address-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                background: var(--vault-black);
+                border: 1px solid var(--vault-border);
+                font-family: var(--font-mono);
+                font-size: 0.85rem;
+                border-radius: var(--radius-md);
+                overflow: hidden;
+            }
+
+            .address-table thead {
+                background: var(--vault-gray);
+            }
+
+            .address-table th {
+                padding: var(--space-md);
+                text-align: left;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--vault-gold);
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                border-bottom: 2px solid var(--vault-gold);
+            }
+
+            .address-table td {
+                padding: var(--space-md);
+                border-bottom: 1px solid var(--vault-border);
+            }
+
+            .address-table tbody tr {
+                transition: background 0.2s ease;
+            }
+
+            .address-table tbody tr:hover {
+                background: rgba(212, 175, 55, 0.06);
+            }
+
+            .address-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .address-index-cell {
+                font-weight: 600;
+                color: var(--vault-gold);
+                white-space: nowrap;
+                width: 60px;
+            }
+
+            .address-value-cell {
+                word-break: break-all;
+                max-width: 300px;
+                color: var(--text-secondary);
+            }
+
+            .address-path-cell {
+                color: var(--text-dim);
+                white-space: nowrap;
+                font-size: 0.8rem;
+            }
+
+            .address-actions-cell {
+                white-space: nowrap;
+                width: 150px;
+            }
+
+            .address-key-value {
+                cursor: pointer;
+                padding: var(--space-xs);
+                background: var(--vault-dark);
+                display: inline-block;
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                border: 1px solid transparent;
+                transition: all 0.3s ease;
+                border-radius: var(--radius-sm);
+            }
+
+            .address-key-value.masked {
+                filter: blur(4px);
+                user-select: none;
+            }
+
+            .address-key-value.masked:hover {
+                filter: blur(2px);
+            }
+
+            .address-key-value:not(.masked):hover {
+                border-color: var(--vault-gold);
+                color: var(--vault-gold);
+            }
+
+            /* Mobile responsive */
+            @media (max-width: 767px) {
+                .address-table {
+                    display: block;
+                    overflow-x: auto;
+                }
+
+                .address-table thead {
+                    display: none;
+                }
+
+                .address-table tbody {
+                    display: block;
+                }
+
+                .address-table tr {
+                    display: block;
+                    margin-bottom: var(--space-md);
+                    border: 1px solid var(--vault-border);
+                    padding: var(--space-md);
+                }
+
+                .address-table td {
+                    display: block;
+                    padding: var(--space-xs) 0;
+                    border: none;
+                }
+
+                .address-table td::before {
+                    content: attr(data-label);
+                    display: block;
+                    font-size: 0.7rem;
+                    color: var(--vault-gold);
+                    text-transform: uppercase;
+                    margin-bottom: 0.25rem;
+                }
+            }
+
+            /* ========== Debug Panel ========== */
+
+            .debug-panel {
+                background: var(--vault-black);
+                border: 1px solid var(--vault-border);
+                padding: var(--space-md);
+                margin-top: var(--space-lg);
+                font-family: var(--font-mono);
+                font-size: 0.8rem;
+                border-radius: var(--radius-md);
+            }
+
+            .debug-panel summary {
+                cursor: pointer;
+                font-weight: 600;
+                padding: var(--space-sm);
+                user-select: none;
+                color: var(--vault-gold);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .debug-panel summary::marker {
+                color: var(--vault-gold);
+            }
+
+            .debug-item {
+                margin: var(--space-sm) 0;
+                padding: var(--space-sm);
+                background: var(--vault-dark);
+                border-left: 2px solid var(--vault-gold);
+                border-radius: var(--radius-sm);
+            }
+
+            .debug-label {
+                color: var(--text-dim);
+                font-size: 0.7rem;
+                text-transform: uppercase;
+            }
+
+            .debug-value {
+                color: var(--vault-green);
+                word-break: break-all;
+                margin-top: 0.25rem;
+            }
+
+            /* ========== Toast Notifications ========== */
+
+            .toast-container {
+                position: fixed;
+                bottom: var(--space-lg);
+                right: var(--space-lg);
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            @media (max-width: 767px) {
+                .toast-container {
+                    left: var(--space-md);
+                    right: var(--space-md);
+                    bottom: var(--space-md);
+                }
+            }
+
+            .toast {
+                background: var(--vault-dark);
+                border: 1px solid var(--vault-border);
+                padding: var(--space-md);
+                box-shadow: var(--shadow-soft);
+                animation: slideIn 0.25s ease;
+                min-width: 250px;
+                font-family: var(--font-mono);
+                font-size: 0.85rem;
+                border-radius: var(--radius-md);
+                display: flex;
+                align-items: center;
+                gap: var(--space-sm);
+            }
+
+            .toast::before {
+                content: "[i]";
+                color: var(--vault-blue);
+                font-weight: 700;
+            }
+
+            .toast.success::before {
+                content: "[ok]";
+                color: var(--vault-green);
+            }
+
+            .toast.error::before {
+                content: "[!]";
+                color: var(--vault-red);
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .toast.success {
+                border-left: 4px solid var(--vault-green);
+            }
+
+            .toast.error {
+                border-left: 4px solid var(--vault-red);
+            }
+
+            .toast.info {
+                border-left: 4px solid var(--vault-blue);
+            }
+
+            /* ========== Loading States ========== */
+
+            .loading {
+                text-align: center;
+                padding: var(--space-2xl);
+                color: var(--text-dim);
+                font-family: var(--font-mono);
+            }
+
+            .spinner {
+                border: 3px solid var(--vault-border);
+                border-top-color: var(--vault-gold);
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto var(--space-md);
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* ========== Utilities ========== */
+
+            .hidden {
+                display: none !important;
+            }
+
+            .text-center {
+                text-align: center;
+            }
+
+            .text-muted {
+                color: var(--text-dim);
+            }
+
+            /* ========== Scrollbar ========== */
+
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: var(--vault-black);
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--vault-border);
+                border-radius: 4px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--vault-gold-dim);
+            }
+
+            /* ========== Selection ========== */
+
+            ::selection {
+                background: var(--vault-gold);
+                color: var(--vault-black);
+            }
+
+            ::-moz-selection {
+                background: var(--vault-gold);
+                color: var(--vault-black);
+            }
+
+            /* ========== Footer ========== */
+
+            .footer {
+                margin-top: var(--space-2xl);
+                padding: var(--space-md) 0;
+                text-align: center;
+                font-family: var(--font-mono);
+                font-size: 0.8rem;
+                color: var(--text-dim);
+                border-top: 1px solid var(--vault-border);
+            }
+
+            .footer a {
+                color: var(--vault-gold);
+                text-decoration: none;
+            }
+
+            .footer a:hover {
+                color: var(--vault-gold-bright);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Loading application...</div>
+            </div>
+        </div>
+
+        <script>
+            // Embedded wordlist
+            window.EMBEDDED_WORDLIST = `abandon
+ability
+able
+about
+above
+absent
+absorb
+abstract
+absurd
+abuse
+access
+accident
+account
+accuse
+achieve
+acid
+acoustic
+acquire
+across
+act
+action
+actor
+actress
+actual
+adapt
+add
+addict
+address
+adjust
+admit
+adult
+advance
+advice
+aerobic
+affair
+afford
+afraid
+again
+age
+agent
+agree
+ahead
+aim
+air
+airport
+aisle
+alarm
+album
+alcohol
+alert
+alien
+all
+alley
+allow
+almost
+alone
+alpha
+already
+also
+alter
+always
+amateur
+amazing
+among
+amount
+amused
+analyst
+anchor
+ancient
+anger
+angle
+angry
+animal
+ankle
+announce
+annual
+another
+answer
+antenna
+antique
+anxiety
+any
+apart
+apology
+appear
+apple
+approve
+april
+arch
+arctic
+area
+arena
+argue
+arm
+armed
+armor
+army
+around
+arrange
+arrest
+arrive
+arrow
+art
+artefact
+artist
+artwork
+ask
+aspect
+assault
+asset
+assist
+assume
+asthma
+athlete
+atom
+attack
+attend
+attitude
+attract
+auction
+audit
+august
+aunt
+author
+auto
+autumn
+average
+avocado
+avoid
+awake
+aware
+away
+awesome
+awful
+awkward
+axis
+baby
+bachelor
+bacon
+badge
+bag
+balance
+balcony
+ball
+bamboo
+banana
+banner
+bar
+barely
+bargain
+barrel
+base
+basic
+basket
+battle
+beach
+bean
+beauty
+because
+become
+beef
+before
+begin
+behave
+behind
+believe
+below
+belt
+bench
+benefit
+best
+betray
+better
+between
+beyond
+bicycle
+bid
+bike
+bind
+biology
+bird
+birth
+bitter
+black
+blade
+blame
+blanket
+blast
+bleak
+bless
+blind
+blood
+blossom
+blouse
+blue
+blur
+blush
+board
+boat
+body
+boil
+bomb
+bone
+bonus
+book
+boost
+border
+boring
+borrow
+boss
+bottom
+bounce
+box
+boy
+bracket
+brain
+brand
+brass
+brave
+bread
+breeze
+brick
+bridge
+brief
+bright
+bring
+brisk
+broccoli
+broken
+bronze
+broom
+brother
+brown
+brush
+bubble
+buddy
+budget
+buffalo
+build
+bulb
+bulk
+bullet
+bundle
+bunker
+burden
+burger
+burst
+bus
+business
+busy
+butter
+buyer
+buzz
+cabbage
+cabin
+cable
+cactus
+cage
+cake
+call
+calm
+camera
+camp
+can
+canal
+cancel
+candy
+cannon
+canoe
+canvas
+canyon
+capable
+capital
+captain
+car
+carbon
+card
+cargo
+carpet
+carry
+cart
+case
+cash
+casino
+castle
+casual
+cat
+catalog
+catch
+category
+cattle
+caught
+cause
+caution
+cave
+ceiling
+celery
+cement
+census
+century
+cereal
+certain
+chair
+chalk
+champion
+change
+chaos
+chapter
+charge
+chase
+chat
+cheap
+check
+cheese
+chef
+cherry
+chest
+chicken
+chief
+child
+chimney
+choice
+choose
+chronic
+chuckle
+chunk
+churn
+cigar
+cinnamon
+circle
+citizen
+city
+civil
+claim
+clap
+clarify
+claw
+clay
+clean
+clerk
+clever
+click
+client
+cliff
+climb
+clinic
+clip
+clock
+clog
+close
+cloth
+cloud
+clown
+club
+clump
+cluster
+clutch
+coach
+coast
+coconut
+code
+coffee
+coil
+coin
+collect
+color
+column
+combine
+come
+comfort
+comic
+common
+company
+concert
+conduct
+confirm
+congress
+connect
+consider
+control
+convince
+cook
+cool
+copper
+copy
+coral
+core
+corn
+correct
+cost
+cotton
+couch
+country
+couple
+course
+cousin
+cover
+coyote
+crack
+cradle
+craft
+cram
+crane
+crash
+crater
+crawl
+crazy
+cream
+credit
+creek
+crew
+cricket
+crime
+crisp
+critic
+crop
+cross
+crouch
+crowd
+crucial
+cruel
+cruise
+crumble
+crunch
+crush
+cry
+crystal
+cube
+culture
+cup
+cupboard
+curious
+current
+curtain
+curve
+cushion
+custom
+cute
+cycle
+dad
+damage
+damp
+dance
+danger
+daring
+dash
+daughter
+dawn
+day
+deal
+debate
+debris
+decade
+december
+decide
+decline
+decorate
+decrease
+deer
+defense
+define
+defy
+degree
+delay
+deliver
+demand
+demise
+denial
+dentist
+deny
+depart
+depend
+deposit
+depth
+deputy
+derive
+describe
+desert
+design
+desk
+despair
+destroy
+detail
+detect
+develop
+device
+devote
+diagram
+dial
+diamond
+diary
+dice
+diesel
+diet
+differ
+digital
+dignity
+dilemma
+dinner
+dinosaur
+direct
+dirt
+disagree
+discover
+disease
+dish
+dismiss
+disorder
+display
+distance
+divert
+divide
+divorce
+dizzy
+doctor
+document
+dog
+doll
+dolphin
+domain
+donate
+donkey
+donor
+door
+dose
+double
+dove
+draft
+dragon
+drama
+drastic
+draw
+dream
+dress
+drift
+drill
+drink
+drip
+drive
+drop
+drum
+dry
+duck
+dumb
+dune
+during
+dust
+dutch
+duty
+dwarf
+dynamic
+eager
+eagle
+early
+earn
+earth
+easily
+east
+easy
+echo
+ecology
+economy
+edge
+edit
+educate
+effort
+egg
+eight
+either
+elbow
+elder
+electric
+elegant
+element
+elephant
+elevator
+elite
+else
+embark
+embody
+embrace
+emerge
+emotion
+employ
+empower
+empty
+enable
+enact
+end
+endless
+endorse
+enemy
+energy
+enforce
+engage
+engine
+enhance
+enjoy
+enlist
+enough
+enrich
+enroll
+ensure
+enter
+entire
+entry
+envelope
+episode
+equal
+equip
+era
+erase
+erode
+erosion
+error
+erupt
+escape
+essay
+essence
+estate
+eternal
+ethics
+evidence
+evil
+evoke
+evolve
+exact
+example
+excess
+exchange
+excite
+exclude
+excuse
+execute
+exercise
+exhaust
+exhibit
+exile
+exist
+exit
+exotic
+expand
+expect
+expire
+explain
+expose
+express
+extend
+extra
+eye
+eyebrow
+fabric
+face
+faculty
+fade
+faint
+faith
+fall
+false
+fame
+family
+famous
+fan
+fancy
+fantasy
+farm
+fashion
+fat
+fatal
+father
+fatigue
+fault
+favorite
+feature
+february
+federal
+fee
+feed
+feel
+female
+fence
+festival
+fetch
+fever
+few
+fiber
+fiction
+field
+figure
+file
+film
+filter
+final
+find
+fine
+finger
+finish
+fire
+firm
+first
+fiscal
+fish
+fit
+fitness
+fix
+flag
+flame
+flash
+flat
+flavor
+flee
+flight
+flip
+float
+flock
+floor
+flower
+fluid
+flush
+fly
+foam
+focus
+fog
+foil
+fold
+follow
+food
+foot
+force
+forest
+forget
+fork
+fortune
+forum
+forward
+fossil
+foster
+found
+fox
+fragile
+frame
+frequent
+fresh
+friend
+fringe
+frog
+front
+frost
+frown
+frozen
+fruit
+fuel
+fun
+funny
+furnace
+fury
+future
+gadget
+gain
+galaxy
+gallery
+game
+gap
+garage
+garbage
+garden
+garlic
+garment
+gas
+gasp
+gate
+gather
+gauge
+gaze
+general
+genius
+genre
+gentle
+genuine
+gesture
+ghost
+giant
+gift
+giggle
+ginger
+giraffe
+girl
+give
+glad
+glance
+glare
+glass
+glide
+glimpse
+globe
+gloom
+glory
+glove
+glow
+glue
+goat
+goddess
+gold
+good
+goose
+gorilla
+gospel
+gossip
+govern
+gown
+grab
+grace
+grain
+grant
+grape
+grass
+gravity
+great
+green
+grid
+grief
+grit
+grocery
+group
+grow
+grunt
+guard
+guess
+guide
+guilt
+guitar
+gun
+gym
+habit
+hair
+half
+hammer
+hamster
+hand
+happy
+harbor
+hard
+harsh
+harvest
+hat
+have
+hawk
+hazard
+head
+health
+heart
+heavy
+hedgehog
+height
+hello
+helmet
+help
+hen
+hero
+hidden
+high
+hill
+hint
+hip
+hire
+history
+hobby
+hockey
+hold
+hole
+holiday
+hollow
+home
+honey
+hood
+hope
+horn
+horror
+horse
+hospital
+host
+hotel
+hour
+hover
+hub
+huge
+human
+humble
+humor
+hundred
+hungry
+hunt
+hurdle
+hurry
+hurt
+husband
+hybrid
+ice
+icon
+idea
+identify
+idle
+ignore
+ill
+illegal
+illness
+image
+imitate
+immense
+immune
+impact
+impose
+improve
+impulse
+inch
+include
+income
+increase
+index
+indicate
+indoor
+industry
+infant
+inflict
+inform
+inhale
+inherit
+initial
+inject
+injury
+inmate
+inner
+innocent
+input
+inquiry
+insane
+insect
+inside
+inspire
+install
+intact
+interest
+into
+invest
+invite
+involve
+iron
+island
+isolate
+issue
+item
+ivory
+jacket
+jaguar
+jar
+jazz
+jealous
+jeans
+jelly
+jewel
+job
+join
+joke
+journey
+joy
+judge
+juice
+jump
+jungle
+junior
+junk
+just
+kangaroo
+keen
+keep
+ketchup
+key
+kick
+kid
+kidney
+kind
+kingdom
+kiss
+kit
+kitchen
+kite
+kitten
+kiwi
+knee
+knife
+knock
+know
+lab
+label
+labor
+ladder
+lady
+lake
+lamp
+language
+laptop
+large
+later
+latin
+laugh
+laundry
+lava
+law
+lawn
+lawsuit
+layer
+lazy
+leader
+leaf
+learn
+leave
+lecture
+left
+leg
+legal
+legend
+leisure
+lemon
+lend
+length
+lens
+leopard
+lesson
+letter
+level
+liar
+liberty
+library
+license
+life
+lift
+light
+like
+limb
+limit
+link
+lion
+liquid
+list
+little
+live
+lizard
+load
+loan
+lobster
+local
+lock
+logic
+lonely
+long
+loop
+lottery
+loud
+lounge
+love
+loyal
+lucky
+luggage
+lumber
+lunar
+lunch
+luxury
+lyrics
+machine
+mad
+magic
+magnet
+maid
+mail
+main
+major
+make
+mammal
+man
+manage
+mandate
+mango
+mansion
+manual
+maple
+marble
+march
+margin
+marine
+market
+marriage
+mask
+mass
+master
+match
+material
+math
+matrix
+matter
+maximum
+maze
+meadow
+mean
+measure
+meat
+mechanic
+medal
+media
+melody
+melt
+member
+memory
+mention
+menu
+mercy
+merge
+merit
+merry
+mesh
+message
+metal
+method
+middle
+midnight
+milk
+million
+mimic
+mind
+minimum
+minor
+minute
+miracle
+mirror
+misery
+miss
+mistake
+mix
+mixed
+mixture
+mobile
+model
+modify
+mom
+moment
+monitor
+monkey
+monster
+month
+moon
+moral
+more
+morning
+mosquito
+mother
+motion
+motor
+mountain
+mouse
+move
+movie
+much
+muffin
+mule
+multiply
+muscle
+museum
+mushroom
+music
+must
+mutual
+myself
+mystery
+myth
+naive
+name
+napkin
+narrow
+nasty
+nation
+nature
+near
+neck
+need
+negative
+neglect
+neither
+nephew
+nerve
+nest
+net
+network
+neutral
+never
+news
+next
+nice
+night
+noble
+noise
+nominee
+noodle
+normal
+north
+nose
+notable
+note
+nothing
+notice
+novel
+now
+nuclear
+number
+nurse
+nut
+oak
+obey
+object
+oblige
+obscure
+observe
+obtain
+obvious
+occur
+ocean
+october
+odor
+off
+offer
+office
+often
+oil
+okay
+old
+olive
+olympic
+omit
+once
+one
+onion
+online
+only
+open
+opera
+opinion
+oppose
+option
+orange
+orbit
+orchard
+order
+ordinary
+organ
+orient
+original
+orphan
+ostrich
+other
+outdoor
+outer
+output
+outside
+oval
+oven
+over
+own
+owner
+oxygen
+oyster
+ozone
+pact
+paddle
+page
+pair
+palace
+palm
+panda
+panel
+panic
+panther
+paper
+parade
+parent
+park
+parrot
+party
+pass
+patch
+path
+patient
+patrol
+pattern
+pause
+pave
+payment
+peace
+peanut
+pear
+peasant
+pelican
+pen
+penalty
+pencil
+people
+pepper
+perfect
+permit
+person
+pet
+phone
+photo
+phrase
+physical
+piano
+picnic
+picture
+piece
+pig
+pigeon
+pill
+pilot
+pink
+pioneer
+pipe
+pistol
+pitch
+pizza
+place
+planet
+plastic
+plate
+play
+please
+pledge
+pluck
+plug
+plunge
+poem
+poet
+point
+polar
+pole
+police
+pond
+pony
+pool
+popular
+portion
+position
+possible
+post
+potato
+pottery
+poverty
+powder
+power
+practice
+praise
+predict
+prefer
+prepare
+present
+pretty
+prevent
+price
+pride
+primary
+print
+priority
+prison
+private
+prize
+problem
+process
+produce
+profit
+program
+project
+promote
+proof
+property
+prosper
+protect
+proud
+provide
+public
+pudding
+pull
+pulp
+pulse
+pumpkin
+punch
+pupil
+puppy
+purchase
+purity
+purpose
+purse
+push
+put
+puzzle
+pyramid
+quality
+quantum
+quarter
+question
+quick
+quit
+quiz
+quote
+rabbit
+raccoon
+race
+rack
+radar
+radio
+rail
+rain
+raise
+rally
+ramp
+ranch
+random
+range
+rapid
+rare
+rate
+rather
+raven
+raw
+razor
+ready
+real
+reason
+rebel
+rebuild
+recall
+receive
+recipe
+record
+recycle
+reduce
+reflect
+reform
+refuse
+region
+regret
+regular
+reject
+relax
+release
+relief
+rely
+remain
+remember
+remind
+remove
+render
+renew
+rent
+reopen
+repair
+repeat
+replace
+report
+require
+rescue
+resemble
+resist
+resource
+response
+result
+retire
+retreat
+return
+reunion
+reveal
+review
+reward
+rhythm
+rib
+ribbon
+rice
+rich
+ride
+ridge
+rifle
+right
+rigid
+ring
+riot
+ripple
+risk
+ritual
+rival
+river
+road
+roast
+robot
+robust
+rocket
+romance
+roof
+rookie
+room
+rose
+rotate
+rough
+round
+route
+royal
+rubber
+rude
+rug
+rule
+run
+runway
+rural
+sad
+saddle
+sadness
+safe
+sail
+salad
+salmon
+salon
+salt
+salute
+same
+sample
+sand
+satisfy
+satoshi
+sauce
+sausage
+save
+say
+scale
+scan
+scare
+scatter
+scene
+scheme
+school
+science
+scissors
+scorpion
+scout
+scrap
+screen
+script
+scrub
+sea
+search
+season
+seat
+second
+secret
+section
+security
+seed
+seek
+segment
+select
+sell
+seminar
+senior
+sense
+sentence
+series
+service
+session
+settle
+setup
+seven
+shadow
+shaft
+shallow
+share
+shed
+shell
+sheriff
+shield
+shift
+shine
+ship
+shiver
+shock
+shoe
+shoot
+shop
+short
+shoulder
+shove
+shrimp
+shrug
+shuffle
+shy
+sibling
+sick
+side
+siege
+sight
+sign
+silent
+silk
+silly
+silver
+similar
+simple
+since
+sing
+siren
+sister
+situate
+six
+size
+skate
+sketch
+ski
+skill
+skin
+skirt
+skull
+slab
+slam
+sleep
+slender
+slice
+slide
+slight
+slim
+slogan
+slot
+slow
+slush
+small
+smart
+smile
+smoke
+smooth
+snack
+snake
+snap
+sniff
+snow
+soap
+soccer
+social
+sock
+soda
+soft
+solar
+soldier
+solid
+solution
+solve
+someone
+song
+soon
+sorry
+sort
+soul
+sound
+soup
+source
+south
+space
+spare
+spatial
+spawn
+speak
+special
+speed
+spell
+spend
+sphere
+spice
+spider
+spike
+spin
+spirit
+split
+spoil
+sponsor
+spoon
+sport
+spot
+spray
+spread
+spring
+spy
+square
+squeeze
+squirrel
+stable
+stadium
+staff
+stage
+stairs
+stamp
+stand
+start
+state
+stay
+steak
+steel
+stem
+step
+stereo
+stick
+still
+sting
+stock
+stomach
+stone
+stool
+story
+stove
+strategy
+street
+strike
+strong
+struggle
+student
+stuff
+stumble
+style
+subject
+submit
+subway
+success
+such
+sudden
+suffer
+sugar
+suggest
+suit
+summer
+sun
+sunny
+sunset
+super
+supply
+supreme
+sure
+surface
+surge
+surprise
+surround
+survey
+suspect
+sustain
+swallow
+swamp
+swap
+swarm
+swear
+sweet
+swift
+swim
+swing
+switch
+sword
+symbol
+symptom
+syrup
+system
+table
+tackle
+tag
+tail
+talent
+talk
+tank
+tape
+target
+task
+taste
+tattoo
+taxi
+teach
+team
+tell
+ten
+tenant
+tennis
+tent
+term
+test
+text
+thank
+that
+theme
+then
+theory
+there
+they
+thing
+this
+thought
+three
+thrive
+throw
+thumb
+thunder
+ticket
+tide
+tiger
+tilt
+timber
+time
+tiny
+tip
+tired
+tissue
+title
+toast
+tobacco
+today
+toddler
+toe
+together
+toilet
+token
+tomato
+tomorrow
+tone
+tongue
+tonight
+tool
+tooth
+top
+topic
+topple
+torch
+tornado
+tortoise
+toss
+total
+tourist
+toward
+tower
+town
+toy
+track
+trade
+traffic
+tragic
+train
+transfer
+trap
+trash
+travel
+tray
+treat
+tree
+trend
+trial
+tribe
+trick
+trigger
+trim
+trip
+trophy
+trouble
+truck
+true
+truly
+trumpet
+trust
+truth
+try
+tube
+tuition
+tumble
+tuna
+tunnel
+turkey
+turn
+turtle
+twelve
+twenty
+twice
+twin
+twist
+two
+type
+typical
+ugly
+umbrella
+unable
+unaware
+uncle
+uncover
+under
+undo
+unfair
+unfold
+unhappy
+uniform
+unique
+unit
+universe
+unknown
+unlock
+until
+unusual
+unveil
+update
+upgrade
+uphold
+upon
+upper
+upset
+urban
+urge
+usage
+use
+used
+useful
+useless
+usual
+utility
+vacant
+vacuum
+vague
+valid
+valley
+valve
+van
+vanish
+vapor
+various
+vast
+vault
+vehicle
+velvet
+vendor
+venture
+venue
+verb
+verify
+version
+very
+vessel
+veteran
+viable
+vibrant
+vicious
+victory
+video
+view
+village
+vintage
+violin
+virtual
+virus
+visa
+visit
+visual
+vital
+vivid
+vocal
+voice
+void
+volcano
+volume
+vote
+voyage
+wage
+wagon
+wait
+walk
+wall
+walnut
+want
+warfare
+warm
+warrior
+wash
+wasp
+waste
+water
+wave
+way
+wealth
+weapon
+wear
+weasel
+weather
+web
+wedding
+weekend
+weird
+welcome
+west
+wet
+whale
+what
+wheat
+wheel
+when
+where
+whip
+whisper
+wide
+width
+wife
+wild
+will
+win
+window
+wine
+wing
+wink
+winner
+winter
+wire
+wisdom
+wise
+wish
+witness
+wolf
+woman
+wonder
+wood
+wool
+word
+work
+world
+worry
+worth
+wrap
+wreck
+wrestle
+wrist
+write
+wrong
+yard
+year
+yellow
+you
+young
+youth
+zebra
+zero
+zone
+zoo
+`;
+        </script>
+
+        <script type="module">
+            // Import all dependencies from embedded data URLs (offline)
+            const secp256k1 =
+                await import("data:text/javascript;base64,LyogZXNtLnNoIC0gQG5vYmxlL3NlY3AyNTZrMUAyLjAuMCAqLwp2YXIgTT0ybioqMjU2bixOPU0tMHgxMDAwMDAzZDFuLGI9TS0weDE0NTUxMjMxOTUwYjc1ZmM0NDAyZGExNzMyZmM5YmViZm4sbnQ9MHg3OWJlNjY3ZWY5ZGNiYmFjNTVhMDYyOTVjZTg3MGIwNzAyOWJmY2RiMmRjZTI4ZDk1OWYyODE1YjE2ZjgxNzk4bixldD0weDQ4M2FkYTc3MjZhM2M0NjU1ZGE0ZmJmYzBlMTEwOGE4ZmQxN2I0NDhhNjg1NTQxOTljNDdkMDhmZmIxMGQ0YjhuLHJ0PXtwOk4sbjpiLGE6MG4sYjo3bixHeDpudCxHeTpldH0seD0zMixXPXQ9PnMocyh0KnQpKnQrcnQuYiksZD0odD0iIik9Pnt0aHJvdyBuZXcgRXJyb3IodCl9LEM9dD0+dHlwZW9mIHQ9PSJiaWdpbnQiLHN0PXQ9PnR5cGVvZiB0PT0ic3RyaW5nIixPPXQ9PkModCkmJjBuPHQmJnQ8Tix6PXQ9PkModCkmJjBuPHQmJnQ8YixvdD0odCxuKT0+ISh0IGluc3RhbmNlb2YgVWludDhBcnJheSl8fHR5cGVvZiBuPT0ibnVtYmVyIiYmbj4wJiZ0Lmxlbmd0aCE9PW4/ZCgiVWludDhBcnJheSBleHBlY3RlZCIpOnQsdj10PT5uZXcgVWludDhBcnJheSh0KSxrPSh0LG4pPT5vdChzdCh0KT9LKHQpOnYodCksbikscz0odCxuPU4pPT57bGV0IGU9dCVuO3JldHVybiBlPj0wbj9lOm4rZX0sSj10PT50IGluc3RhbmNlb2YgUz90OmQoIlBvaW50IGV4cGVjdGVkIiksJCxTPWNsYXNzIHR7Y29uc3RydWN0b3IobixlLHIpe3RoaXMucHg9bix0aGlzLnB5PWUsdGhpcy5wej1yfXN0YXRpYyBmcm9tQWZmaW5lKG4pe3JldHVybiBuZXcgdChuLngsbi55LDFuKX1zdGF0aWMgZnJvbUhleChuKXtuPWsobik7bGV0IGUscj1uWzBdLG89bi5zdWJhcnJheSgxKSxhPWoobywwLHgpLGk9bi5sZW5ndGg7aWYoaT09PTMzJiZbMiwzXS5pbmNsdWRlcyhyKSl7TyhhKXx8ZCgiUG9pbnQgaGV4IGludmFsaWQ6IHggbm90IEZFIik7bGV0IGw9bHQoVyhhKSksaD0obCYxbik9PT0xbjsociYxKT09PTEhPT1oJiYobD1zKC1sKSksZT1uZXcgdChhLGwsMW4pfXJldHVybiBpPT09NjUmJnI9PT00JiYoZT1uZXcgdChhLGoobyx4LDIqeCksMW4pKSxlP2Uub2soKTpkKCJQb2ludCBpcyBub3Qgb24gY3VydmUiKX1zdGF0aWMgZnJvbVByaXZhdGVLZXkobil7cmV0dXJuIEgubXVsKFQobikpfWdldCB4KCl7cmV0dXJuIHRoaXMuYWZmKCkueH1nZXQgeSgpe3JldHVybiB0aGlzLmFmZigpLnl9ZXF1YWxzKG4pe2xldHtweDplLHB5OnIscHo6b309dGhpcyx7cHg6YSxweTppLHB6Omx9PUoobiksaD1zKGUqbCksZj1zKGEqbyksYz1zKHIqbCksdT1zKGkqbyk7cmV0dXJuIGg9PT1mJiZjPT09dX1uZWdhdGUoKXtyZXR1cm4gbmV3IHQodGhpcy5weCxzKC10aGlzLnB5KSx0aGlzLnB6KX1kb3VibGUoKXtyZXR1cm4gdGhpcy5hZGQodGhpcyl9YWRkKG4pe2xldHtweDplLHB5OnIscHo6b309dGhpcyx7cHg6YSxweTppLHB6Omx9PUoobikse2E6aCxiOmZ9PXJ0LGM9MG4sdT0wbix5PTBuLEI9cyhmKjNuKSxwPXMoZSphKSxtPXMocippKSxnPXMobypsKSxQPXMoZStyKSx3PXMoYStpKTtQPXMoUCp3KSx3PXMocCttKSxQPXMoUC13KSx3PXMoZStvKTtsZXQgQT1zKGErbCk7cmV0dXJuIHc9cyh3KkEpLEE9cyhwK2cpLHc9cyh3LUEpLEE9cyhyK28pLGM9cyhpK2wpLEE9cyhBKmMpLGM9cyhtK2cpLEE9cyhBLWMpLHk9cyhoKncpLGM9cyhCKmcpLHk9cyhjK3kpLGM9cyhtLXkpLHk9cyhtK3kpLHU9cyhjKnkpLG09cyhwK3ApLG09cyhtK3ApLGc9cyhoKmcpLHc9cyhCKncpLG09cyhtK2cpLGc9cyhwLWcpLGc9cyhoKmcpLHc9cyh3K2cpLHA9cyhtKncpLHU9cyh1K3ApLHA9cyhBKncpLGM9cyhQKmMpLGM9cyhjLXApLHA9cyhQKm0pLHk9cyhBKnkpLHk9cyh5K3ApLG5ldyB0KGMsdSx5KX1tdWwobixlPSEwKXtpZighZSYmbj09PTBuKXJldHVybiBZO2lmKHoobil8fGQoImludmFsaWQgc2NhbGFyIiksdGhpcy5lcXVhbHMoSCkpcmV0dXJuIHl0KG4pLnA7bGV0IHI9WSxvPUg7Zm9yKGxldCBhPXRoaXM7bj4wbjthPWEuZG91YmxlKCksbj4+PTFuKW4mMW4/cj1yLmFkZChhKTplJiYobz1vLmFkZChhKSk7cmV0dXJuIHJ9bXVsQWRkUVVucyhuLGUscil7cmV0dXJuIHRoaXMubXVsKGUsITEpLmFkZChuLm11bChyLCExKSkub2soKX10b0FmZmluZSgpe2xldHtweDpuLHB5OmUscHo6cn09dGhpcztpZih0aGlzLmVxdWFscyhZKSlyZXR1cm57eDowbix5OjBufTtpZihyPT09MW4pcmV0dXJue3g6bix5OmV9O2xldCBvPVUocik7cmV0dXJuIHMocipvKSE9PTFuJiZkKCJpbnZhbGlkIGludmVyc2UiKSx7eDpzKG4qbykseTpzKGUqbyl9fWFzc2VydFZhbGlkaXR5KCl7bGV0e3g6bix5OmV9PXRoaXMuYWZmKCk7cmV0dXJuKCFPKG4pfHwhTyhlKSkmJmQoIlBvaW50IGludmFsaWQ6IHggb3IgeSIpLHMoZSplKT09PVcobik/dGhpczpkKCJQb2ludCBpbnZhbGlkOiBub3Qgb24gY3VydmUiKX1tdWx0aXBseShuKXtyZXR1cm4gdGhpcy5tdWwobil9YWZmKCl7cmV0dXJuIHRoaXMudG9BZmZpbmUoKX1vaygpe3JldHVybiB0aGlzLmFzc2VydFZhbGlkaXR5KCl9dG9IZXgobj0hMCl7bGV0e3g6ZSx5OnJ9PXRoaXMuYWZmKCk7cmV0dXJuKG4/KHImMW4pPT09MG4/IjAyIjoiMDMiOiIwNCIpK0UoZSkrKG4/IiI6RShyKSl9dG9SYXdCeXRlcyhuPSEwKXtyZXR1cm4gSyh0aGlzLnRvSGV4KG4pKX19O1MuQkFTRT1uZXcgUyhudCxldCwxbik7Uy5aRVJPPW5ldyBTKDBuLDFuLDBuKTt2YXJ7QkFTRTpILFpFUk86WX09UyxpdD0odCxuKT0+dC50b1N0cmluZygxNikucGFkU3RhcnQobiwiMCIpLFE9dD0+QXJyYXkuZnJvbSh0KS5tYXAobj0+aXQobiwyKSkuam9pbigiIiksSz10PT57bGV0IG49dC5sZW5ndGg7KCFzdCh0KXx8biUyKSYmZCgiaGV4IGludmFsaWQgMSIpO2xldCBlPXYobi8yKTtmb3IobGV0IHI9MDtyPGUubGVuZ3RoO3IrKyl7bGV0IG89cioyLGE9dC5zbGljZShvLG8rMiksaT1OdW1iZXIucGFyc2VJbnQoYSwxNik7KE51bWJlci5pc05hTihpKXx8aTwwKSYmZCgiaGV4IGludmFsaWQgMiIpLGVbcl09aX1yZXR1cm4gZX0scT10PT5CaWdJbnQoIjB4IisoUSh0KXx8IjAiKSksaj0odCxuLGUpPT5xKHQuc2xpY2UobixlKSksWD10PT5DKHQpJiZ0Pj0wbiYmdDxNP0soaXQodCwyKngpKTpkKCJiaWdpbnQgZXhwZWN0ZWQiKSxFPXQ9PlEoWCh0KSksRz0oLi4udCk9PntsZXQgbj12KHQucmVkdWNlKChyLG8pPT5yK290KG8pLmxlbmd0aCwwKSksZT0wO3JldHVybiB0LmZvckVhY2gocj0+e24uc2V0KHIsZSksZSs9ci5sZW5ndGh9KSxufSxVPSh0LG49Tik9PnsodD09PTBufHxuPD0wbikmJmQoIm5vIGludmVyc2Ugbj0iK3QrIiBtb2Q9IituKTtsZXQgZT1zKHQsbikscj1uLG89MG4sYT0xbixpPTFuLGw9MG47Zm9yKDtlIT09MG47KXtsZXQgaD1yL2UsZj1yJWUsYz1vLWkqaCx1PWEtbCpoO3I9ZSxlPWYsbz1pLGE9bCxpPWMsbD11fXJldHVybiByPT09MW4/cyhvLG4pOmQoIm5vIGludmVyc2UiKX0sbHQ9dD0+e2xldCBuPTFuO2ZvcihsZXQgZT10LHI9KE4rMW4pLzRuO3I+MG47cj4+PTFuKXImMW4mJihuPW4qZSVOKSxlPWUqZSVOO3JldHVybiBzKG4qbik9PT10P246ZCgic3FydCBpbnZhbGlkIil9LFQ9dD0+KEModCl8fCh0PXEoayh0LHgpKSkseih0KT90OmQoInByaXZhdGUga2V5IG91dCBvZiByYW5nZSIpKSxGPXQ9PnQ+Yj4+MW47ZnVuY3Rpb24gcHQodCxuPSEwKXtyZXR1cm4gUy5mcm9tUHJpdmF0ZUtleSh0KS50b1Jhd0J5dGVzKG4pfXZhciBWPWNsYXNzIHR7Y29uc3RydWN0b3IobixlLHIpe3RoaXMucj1uLHRoaXMucz1lLHRoaXMucmVjb3Zlcnk9cix0aGlzLmFzc2VydFZhbGlkaXR5KCl9c3RhdGljIGZyb21Db21wYWN0KG4pe3JldHVybiBuPWsobiw2NCksbmV3IHQoaihuLDAseCksaihuLHgsMip4KSl9YXNzZXJ0VmFsaWRpdHkoKXtyZXR1cm4geih0aGlzLnIpJiZ6KHRoaXMucyk/dGhpczpkKCl9YWRkUmVjb3ZlcnlCaXQobil7cmV0dXJuIG5ldyB0KHRoaXMucix0aGlzLnMsbil9aGFzSGlnaFMoKXtyZXR1cm4gRih0aGlzLnMpfXJlY292ZXJQdWJsaWNLZXkobil7bGV0e3I6ZSxzOnIscmVjb3Zlcnk6b309dGhpcztbMCwxLDIsM10uaW5jbHVkZXMobyl8fGQoInJlY292ZXJ5IGlkIGludmFsaWQiKTtsZXQgYT1MKGsobiwzMikpLGk9bz09PTJ8fG89PT0zP2UrYjplO2k+PU4mJmQoInEueCBpbnZhbGlkIik7bGV0IGw9KG8mMSk9PT0wPyIwMiI6IjAzIixoPVMuZnJvbUhleChsK0UoaSkpLGY9VShpLGIpLGM9cygtYSpmLGIpLHU9cyhyKmYsYik7cmV0dXJuIEgubXVsQWRkUVVucyhoLGMsdSl9dG9Db21wYWN0UmF3Qnl0ZXMoKXtyZXR1cm4gSyh0aGlzLnRvQ29tcGFjdEhleCgpKX10b0NvbXBhY3RIZXgoKXtyZXR1cm4gRSh0aGlzLnIpK0UodGhpcy5zKX19LGN0PXQ9PntsZXQgbj10Lmxlbmd0aCo4LTI1NixlPXEodCk7cmV0dXJuIG4+MD9lPj5CaWdJbnQobik6ZX0sTD10PT5zKGN0KHQpLGIpLF89dD0+WCh0KSx0dD0oKT0+dHlwZW9mIGdsb2JhbFRoaXM9PSJvYmplY3QiJiYiY3J5cHRvImluIGdsb2JhbFRoaXM/Z2xvYmFsVGhpcy5jcnlwdG86dm9pZCAwLFosRD17bG93UzohMH0sZHQ9e2xvd1M6ITB9O2Z1bmN0aW9uIGF0KHQsbixlPUQpe1siZGVyIiwicmVjb3ZlcmVkIiwiY2Fub25pY2FsIl0uc29tZSh1PT51IGluIGUpJiZkKCJzaWduKCkgbGVnYWN5IG9wdGlvbnMgbm90IHN1cHBvcnRlZCIpO2xldHtsb3dTOnJ9PWU7cj09bnVsbCYmKHI9ITApO2xldCBvPUwoayh0KSksYT1fKG8pLGk9VChuKSxsPVtfKGkpLGFdLGg9ZS5leHRyYUVudHJvcHk7aWYoaCl7aD09PSEwJiYoaD1JLnJhbmRvbUJ5dGVzKHgpKTtsZXQgdT1rKGgpO3UubGVuZ3RoIT09eCYmZCgpLGwucHVzaCh1KX1sZXQgZj1vLGM9dT0+e2xldCB5PWN0KHUpO2lmKCF6KHkpKXJldHVybjtsZXQgQj1VKHksYikscD1ILm11bCh5KS5hZmYoKSxtPXMocC54LGIpO2lmKG09PT0wbilyZXR1cm47bGV0IGc9cyhCKnMoZitzKGkqbSxiKSxiKSxiKTtpZihnPT09MG4pcmV0dXJuO2xldCBQPWcsdz0ocC54PT09bT8wOjIpfE51bWJlcihwLnkmMW4pO3JldHVybiByJiZGKGcpJiYoUD1zKC1nLGIpLHdePTEpLG5ldyBWKG0sUCx3KX07cmV0dXJue3NlZWQ6RyguLi5sKSxrMnNpZzpjfX1mdW5jdGlvbiB1dCh0KXtsZXQgbj12KHgpLGU9dih4KSxyPTAsbz0oKT0+e24uZmlsbCgxKSxlLmZpbGwoMCkscj0wfSxhPSJkcmJnOiB0cmllZCAxMDAwIHZhbHVlcyI7aWYodCl7bGV0IGk9KC4uLmYpPT5JLmhtYWNTaGEyNTZBc3luYyhlLG4sLi4uZiksbD1hc3luYyhmPXYoKSk9PntlPWF3YWl0IGkodihbMF0pLGYpLG49YXdhaXQgaSgpLGYubGVuZ3RoIT09MCYmKGU9YXdhaXQgaSh2KFsxXSksZiksbj1hd2FpdCBpKCkpfSxoPWFzeW5jKCk9PihyKys+PTFlMyYmZChhKSxuPWF3YWl0IGkoKSxuKTtyZXR1cm4gYXN5bmMoZixjKT0+e28oKSxhd2FpdCBsKGYpO2xldCB1O2Zvcig7ISh1PWMoYXdhaXQgaCgpKSk7KWF3YWl0IGwoKTtyZXR1cm4gbygpLHV9fWVsc2V7bGV0IGk9KC4uLmYpPT57bGV0IGM9WjtyZXR1cm4gY3x8ZCgiZXRjLmhtYWNTaGEyNTZTeW5jIG5vdCBzZXQiKSxjKGUsbiwuLi5mKX0sbD0oZj12KCkpPT57ZT1pKHYoWzBdKSxmKSxuPWkoKSxmLmxlbmd0aCE9PTAmJihlPWkodihbMV0pLGYpLG49aSgpKX0saD0oKT0+KHIrKz49MWUzJiZkKGEpLG49aSgpLG4pO3JldHVybihmLGMpPT57bygpLGwoZik7bGV0IHU7Zm9yKDshKHU9YyhoKCkpKTspbCgpO3JldHVybiBvKCksdX19fWFzeW5jIGZ1bmN0aW9uIG10KHQsbixlPUQpe2xldHtzZWVkOnIsazJzaWc6b309YXQodCxuLGUpO3JldHVybiB1dCghMCkocixvKX1mdW5jdGlvbiBidCh0LG4sZT1EKXtsZXR7c2VlZDpyLGsyc2lnOm99PWF0KHQsbixlKTtyZXR1cm4gdXQoITEpKHIsbyl9ZnVuY3Rpb24gZ3QodCxuLGUscj1kdCl7bGV0e2xvd1M6b309cjtvPT1udWxsJiYobz0hMCksInN0cmljdCJpbiByJiZkKCJ2ZXJpZnkoKSBsZWdhY3kgb3B0aW9ucyBub3Qgc3VwcG9ydGVkIik7bGV0IGEsaSxsLGg9dCYmdHlwZW9mIHQ9PSJvYmplY3QiJiYiciJpbiB0OyFoJiZrKHQpLmxlbmd0aCE9PTIqeCYmZCgic2lnbmF0dXJlIG11c3QgYmUgNjQgYnl0ZXMiKTt0cnl7YT1oP25ldyBWKHQucix0LnMpLmFzc2VydFZhbGlkaXR5KCk6Vi5mcm9tQ29tcGFjdCh0KSxpPUwoayhuLHgpKSxsPWUgaW5zdGFuY2VvZiBTP2Uub2soKTpTLmZyb21IZXgoZSl9Y2F0Y2h7cmV0dXJuITF9aWYoIWEpcmV0dXJuITE7bGV0e3I6ZixzOmN9PWE7aWYobyYmRihjKSlyZXR1cm4hMTtsZXQgdTt0cnl7bGV0IEI9VShjLGIpLHA9cyhpKkIsYiksbT1zKGYqQixiKTt1PUgubXVsQWRkUVVucyhsLHAsbSkuYWZmKCl9Y2F0Y2h7cmV0dXJuITF9cmV0dXJuIHU/cyh1LngsYik9PT1mOiExfWZ1bmN0aW9uIHd0KHQsbixlPSEwKXtyZXR1cm4gUy5mcm9tSGV4KG4pLm11bChUKHQpKS50b1Jhd0J5dGVzKGUpfWZ1bmN0aW9uIGZ0KHQpe3Q9ayh0KTtsZXQgbj14Kzg7KHQubGVuZ3RoPG58fHQubGVuZ3RoPjEwMjQpJiZkKCJleHBlY3RlZCBwcm9wZXIgcGFyYW1zIik7bGV0IGU9cyhxKHQpLGItMW4pKzFuO3JldHVybiBYKGUpfXZhciBJPXtoZXhUb0J5dGVzOkssYnl0ZXNUb0hleDpRLGNvbmNhdEJ5dGVzOkcsYnl0ZXNUb051bWJlckJFOnEsbnVtYmVyVG9CeXRlc0JFOlgsbW9kOnMsaW52ZXJ0OlUsaG1hY1NoYTI1NkFzeW5jOmFzeW5jKHQsLi4ubik9PntsZXQgZT10dCgpO2lmKCFlKXJldHVybiBkKCJldGMuaG1hY1NoYTI1NkFzeW5jIG5vdCBzZXQiKTtsZXQgcj1lLnN1YnRsZSxvPWF3YWl0IHIuaW1wb3J0S2V5KCJyYXciLHQse25hbWU6IkhNQUMiLGhhc2g6e25hbWU6IlNIQS0yNTYifX0sITEsWyJzaWduIl0pO3JldHVybiB2KGF3YWl0IHIuc2lnbigiSE1BQyIsbyxHKC4uLm4pKSl9LGhtYWNTaGEyNTZTeW5jOlosaGFzaFRvUHJpdmF0ZUtleTpmdCxyYW5kb21CeXRlczp0PT57bGV0IG49dHQoKTtyZXR1cm4gbnx8ZCgiY3J5cHRvLmdldFJhbmRvbVZhbHVlcyBtdXN0IGJlIGRlZmluZWQiKSxuLmdldFJhbmRvbVZhbHVlcyh2KHQpKX19LHh0PXtub3JtUHJpdmF0ZUtleVRvU2NhbGFyOlQsaXNWYWxpZFByaXZhdGVLZXk6dD0+e3RyeXtyZXR1cm4hIVQodCl9Y2F0Y2h7cmV0dXJuITF9fSxyYW5kb21Qcml2YXRlS2V5OigpPT5mdChJLnJhbmRvbUJ5dGVzKHgrOCkpLHByZWNvbXB1dGUodD04LG49SCl7cmV0dXJuIG4ubXVsdGlwbHkoM24pLG59fTtPYmplY3QuZGVmaW5lUHJvcGVydGllcyhJLHtobWFjU2hhMjU2U3luYzp7Y29uZmlndXJhYmxlOiExLGdldCgpe3JldHVybiBafSxzZXQodCl7Wnx8KFo9dCl9fX0pO3ZhciBSPTgsaHQ9KCk9PntsZXQgdD1bXSxuPTI1Ni9SKzEsZT1ILHI9ZTtmb3IobGV0IG89MDtvPG47bysrKXtyPWUsdC5wdXNoKHIpO2ZvcihsZXQgYT0xO2E8MioqKFItMSk7YSsrKXI9ci5hZGQoZSksdC5wdXNoKHIpO2U9ci5kb3VibGUoKX1yZXR1cm4gdH0seXQ9dD0+e2xldCBuPSR8fCgkPWh0KCkpLGU9KGMsdSk9PntsZXQgeT11Lm5lZ2F0ZSgpO3JldHVybiBjP3k6dX0scj1ZLG89SCxhPTErMjU2L1IsaT0yKiooUi0xKSxsPUJpZ0ludCgyKipSLTEpLGg9MioqUixmPUJpZ0ludChSKTtmb3IobGV0IGM9MDtjPGE7YysrKXtsZXQgdT1jKmkseT1OdW1iZXIodCZsKTt0Pj49Zix5PmkmJih5LT1oLHQrPTFuKTtsZXQgQj11LHA9dStNYXRoLmFicyh5KS0xLG09YyUyIT09MCxnPXk8MDt5PT09MD9vPW8uYWRkKGUobSxuW0JdKSk6cj1yLmFkZChlKGcsbltwXSkpfXJldHVybntwOnIsZjpvfX07ZXhwb3J0e3J0IGFzIENVUlZFLFMgYXMgUHJvamVjdGl2ZVBvaW50LFYgYXMgU2lnbmF0dXJlLEkgYXMgZXRjLHB0IGFzIGdldFB1YmxpY0tleSx3dCBhcyBnZXRTaGFyZWRTZWNyZXQsYnQgYXMgc2lnbixtdCBhcyBzaWduQXN5bmMseHQgYXMgdXRpbHMsZ3QgYXMgdmVyaWZ5fTsKLyohIEJ1bmRsZWQgbGljZW5zZSBpbmZvcm1hdGlvbjoKCkBub2JsZS9zZWNwMjU2azEvaW5kZXguanM6CiAgKCohIG5vYmxlLXNlY3AyNTZrMSAtIE1JVCBMaWNlbnNlIChjKSAyMDE5IFBhdWwgTWlsbGVyIChwYXVsbWlsbHIuY29tKSAqKQoqLwovLyMgc291cmNlTWFwcGluZ1VSTD1zZWNwMjU2azEuYnVuZGxlLm1qcy5tYXA=");
+            const ed25519 =
+                await import("data:text/javascript;base64,LyogZXNtLnNoIC0gQG5vYmxlL2VkMjU1MTlAMi4wLjAgKi8KdmFyIHk9Mm4qKjI1NW4tMTluLEU9Mm4qKjI1Mm4rMjc3NDIzMTc3NzczNzIzNTM1MzU4NTE5Mzc3OTA4ODM2NDg0OTNuLE49MHgyMTY5MzZkM2NkNmU1M2ZlYzBhNGUyMzFmZGQ2ZGM1YzY5MmNjNzYwOTUyNWE3YjJjOTU2MmQ2MDhmMjVkNTFhbixPPTB4NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY1OG4sSD17YTotMW4sZDozNzA5NTcwNTkzNDY2OTQzOTM0MzEzODA4MzUwODc1NDU2NTE4OTU0MjExMzg3OTg0MzIxOTAxNjM4ODc4NTUzMzA4NTk0MDI4MzU1NW4scDp5LG46RSxoOjgsR3g6TixHeTpPfSxiPShuPSIiKT0+e3Rocm93IG5ldyBFcnJvcihuKX0sSj1uPT50eXBlb2Ygbj09InN0cmluZyIsWD0obix0KT0+IShuIGluc3RhbmNlb2YgVWludDhBcnJheSl8fHR5cGVvZiB0PT0ibnVtYmVyIiYmdD4wJiZuLmxlbmd0aCE9PXQ/YigiVWludDhBcnJheSBleHBlY3RlZCIpOm4sWj1uPT5uZXcgVWludDhBcnJheShuKSxCPShuLHQpPT5YKEoobik/RyhuKTpaKG4pLHQpLGM9KG4sdD15KT0+e2xldCBzPW4ldDtyZXR1cm4gcz49MG4/czp0K3N9LHE9bj0+biBpbnN0YW5jZW9mIHg/bjpiKCJQb2ludCBleHBlY3RlZCIpLEQseD1jbGFzcyBue2NvbnN0cnVjdG9yKHQscyxlLHIpe3RoaXMuZXg9dCx0aGlzLmV5PXMsdGhpcy5lej1lLHRoaXMuZXQ9cn1zdGF0aWMgZnJvbUFmZmluZSh0KXtyZXR1cm4gbmV3IG4odC54LHQueSwxbixjKHQueCp0LnkpKX1zdGF0aWMgZnJvbUhleCh0LHM9ITApe2xldHtkOmV9PUg7dD1CKHQsMzIpO2xldCByPXQuc2xpY2UoKTtyWzMxXT10WzMxXSYtMTI5O2xldCBvPUkocik7bz09PTBufHwocyYmISgwbjxvJiZvPHkpJiZiKCJiYWQgeSBjb29yZCAxIiksIXMmJiEoMG48byYmbzwybioqMjU2bikmJmIoImJhZCB5IGNvb3JkIDIiKSk7bGV0IGk9YyhvKm8pLGw9YyhpLTFuKSxmPWMoZSppKzFuKSx7aXNWYWxpZDpkLHZhbHVlOmF9PWx0KGwsZik7ZHx8YigiYmFkIHkgY29vcmRpbmF0ZSAzIik7bGV0IHU9KGEmMW4pPT09MW47cmV0dXJuKHRbMzFdJjEyOCkhPT0wIT09dSYmKGE9YygtYSkpLG5ldyBuKGEsbywxbixjKGEqbykpfWdldCB4KCl7cmV0dXJuIHRoaXMudG9BZmZpbmUoKS54fWdldCB5KCl7cmV0dXJuIHRoaXMudG9BZmZpbmUoKS55fWVxdWFscyh0KXtsZXR7ZXg6cyxleTplLGV6OnJ9PXRoaXMse2V4Om8sZXk6aSxlejpsfT1xKHQpLGY9YyhzKmwpLGQ9YyhvKnIpLGE9YyhlKmwpLHU9YyhpKnIpO3JldHVybiBmPT09ZCYmYT09PXV9aXMwKCl7cmV0dXJuIHRoaXMuZXF1YWxzKFApfW5lZ2F0ZSgpe3JldHVybiBuZXcgbihjKC10aGlzLmV4KSx0aGlzLmV5LHRoaXMuZXosYygtdGhpcy5ldCkpfWRvdWJsZSgpe2xldHtleDp0LGV5OnMsZXo6ZX09dGhpcyx7YTpyfT1ILG89Yyh0KnQpLGk9YyhzKnMpLGw9YygybipjKGUqZSkpLGY9YyhyKm8pLGQ9dCtzLGE9YyhjKGQqZCktby1pKSx1PWYraSxoPXUtbCxtPWYtaSxBPWMoYSpoKSxSPWModSptKSx2PWMoYSptKSx6PWMoaCp1KTtyZXR1cm4gbmV3IG4oQSxSLHosdil9YWRkKHQpe2xldHtleDpzLGV5OmUsZXo6cixldDpvfT10aGlzLHtleDppLGV5OmwsZXo6ZixldDpkfT1xKHQpLHthLGQ6dX09SCxoPWMocyppKSxtPWMoZSpsKSxBPWMobyp1KmQpLFI9YyhyKmYpLHY9YygocytlKSooaStsKS1oLW0pLHo9YyhSLUEpLGo9YyhSK0EpLGs9YyhtLWEqaCksb3Q9Yyh2KnopLGN0PWMoaiprKSxydD1jKHYqayksaXQ9Yyh6KmopO3JldHVybiBuZXcgbihvdCxjdCxpdCxydCl9bXVsKHQscz0hMCl7aWYodD09PTBuKXJldHVybiBzPT09ITA/YigiY2Fubm90IG11bHRpcGx5IGJ5IDAiKTpQO2lmKHR5cGVvZiB0PT0iYmlnaW50IiYmMG48dCYmdDxFfHxiKCJpbnZhbGlkIHNjYWxhciwgbXVzdCBiZSA8IEwiKSwhcyYmdGhpcy5pczAoKXx8dD09PTFuKXJldHVybiB0aGlzO2lmKHRoaXMuZXF1YWxzKHcpKXJldHVybiBmdCh0KS5wO2xldCBlPVAscj13O2ZvcihsZXQgbz10aGlzO3Q+MG47bz1vLmRvdWJsZSgpLHQ+Pj0xbil0JjFuP2U9ZS5hZGQobyk6cyYmKHI9ci5hZGQobykpO3JldHVybiBlfW11bHRpcGx5KHQpe3JldHVybiB0aGlzLm11bCh0KX1jbGVhckNvZmFjdG9yKCl7cmV0dXJuIHRoaXMubXVsKEJpZ0ludChILmgpLCExKX1pc1NtYWxsT3JkZXIoKXtyZXR1cm4gdGhpcy5jbGVhckNvZmFjdG9yKCkuaXMwKCl9aXNUb3JzaW9uRnJlZSgpe2xldCB0PXRoaXMubXVsKEUvMm4sITEpLmRvdWJsZSgpO3JldHVybiBFJTJuJiYodD10LmFkZCh0aGlzKSksdC5pczAoKX10b0FmZmluZSgpe2xldHtleDp0LGV5OnMsZXo6ZX09dGhpcztpZih0aGlzLmlzMCgpKXJldHVybnt4OjBuLHk6MG59O2xldCByPXR0KGUpO3JldHVybiBjKGUqcikhPT0xbiYmYigiaW52YWxpZCBpbnZlcnNlIikse3g6Yyh0KnIpLHk6YyhzKnIpfX10b1Jhd0J5dGVzKCl7bGV0e3g6dCx5OnN9PXRoaXMudG9BZmZpbmUoKSxlPSQocyk7cmV0dXJuIGVbMzFdfD10JjFuPzEyODowLGV9dG9IZXgoKXtyZXR1cm4gQyh0aGlzLnRvUmF3Qnl0ZXMoKSl9fTt4LkJBU0U9bmV3IHgoTixPLDFuLGMoTipPKSk7eC5aRVJPPW5ldyB4KDBuLDFuLDFuLDBuKTt2YXJ7QkFTRTp3LFpFUk86UH09eCxRPShuLHQpPT5uLnRvU3RyaW5nKDE2KS5wYWRTdGFydCh0LCIwIiksQz1uPT5BcnJheS5mcm9tKG4pLm1hcCh0PT5RKHQsMikpLmpvaW4oIiIpLEc9bj0+e2xldCB0PW4ubGVuZ3RoOyghSihuKXx8dCUyKSYmYigiaGV4IGludmFsaWQgMSIpO2xldCBzPVoodC8yKTtmb3IobGV0IGU9MDtlPHMubGVuZ3RoO2UrKyl7bGV0IHI9ZSoyLG89bi5zbGljZShyLHIrMiksaT1OdW1iZXIucGFyc2VJbnQobywxNik7KE51bWJlci5pc05hTihpKXx8aTwwKSYmYigiaGV4IGludmFsaWQgMiIpLHNbZV09aX1yZXR1cm4gc30sJD1uPT5HKFEobiwzMioyKSkucmV2ZXJzZSgpLEk9bj0+QmlnSW50KCIweCIrQyhaKFgobikpLnJldmVyc2UoKSkpLFM9KC4uLm4pPT57bGV0IHQ9WihuLnJlZHVjZSgoZSxyKT0+ZStYKHIpLmxlbmd0aCwwKSkscz0wO3JldHVybiBuLmZvckVhY2goZT0+e3Quc2V0KGUscykscys9ZS5sZW5ndGh9KSx0fSx0dD0obix0PXkpPT57KG49PT0wbnx8dDw9MG4pJiZiKCJubyBpbnZlcnNlIG49IituKyIgbW9kPSIrdCk7bGV0IHM9YyhuLHQpLGU9dCxyPTBuLG89MW4saT0xbixsPTBuO2Zvcig7cyE9PTBuOyl7bGV0IGY9ZS9zLGQ9ZSVzLGE9ci1pKmYsdT1vLWwqZjtlPXMscz1kLHI9aSxvPWwsaT1hLGw9dX1yZXR1cm4gZT09PTFuP2Mocix0KTpiKCJubyBpbnZlcnNlIil9LHA9KG4sdCk9PntsZXQgcz1uO2Zvcig7dC0tID4wbjspcyo9cyxzJT15O3JldHVybiBzfSxhdD1uPT57bGV0IHM9bipuJXkqbiV5LGU9cChzLDJuKSpzJXkscj1wKGUsMW4pKm4leSxvPXAociw1bikqciV5LGk9cChvLDEwbikqbyV5LGw9cChpLDIwbikqaSV5LGY9cChsLDQwbikqbCV5LGQ9cChmLDgwbikqZiV5LGE9cChkLDgwbikqZiV5LHU9cChhLDEwbikqbyV5O3JldHVybntwb3dfcF81Xzg6cCh1LDJuKSpuJXksYjI6c319LE09MTk2ODExNjEzNzY3MDc1MDU5NTY4MDcwNzkzMDQ5ODg1NDIwMTU0NDYwNjY1MTU5MjM4OTAxNjI3NDQwMjEwNzMxMjM4Mjk3ODQ3NTJuLGx0PShuLHQpPT57bGV0IHM9Yyh0KnQqdCksZT1jKHMqcyp0KSxyPWF0KG4qZSkucG93X3BfNV84LG89YyhuKnMqciksaT1jKHQqbypvKSxsPW8sZj1jKG8qTSksZD1pPT09bixhPWk9PT1jKC1uKSx1PWk9PT1jKC1uKk0pO3JldHVybiBkJiYobz1sKSwoYXx8dSkmJihvPWYpLChjKG8pJjFuKT09PTFuJiYobz1jKC1vKSkse2lzVmFsaWQ6ZHx8YSx2YWx1ZTpvfX0sVD1uPT5jKEkobiksRSksXyxLPSguLi5uKT0+Vi5zaGE1MTJBc3luYyguLi5uKSxGPSguLi5uKT0+dHlwZW9mIF89PSJmdW5jdGlvbiI/XyguLi5uKTpiKCJldGMuc2hhNTEyU3luYyBub3Qgc2V0IiksbnQ9bj0+e2xldCB0PW4uc2xpY2UoMCwzMik7dFswXSY9MjQ4LHRbMzFdJj0xMjcsdFszMV18PTY0O2xldCBzPW4uc2xpY2UoMzIsNjQpLGU9VCh0KSxyPXcubXVsKGUpLG89ci50b1Jhd0J5dGVzKCk7cmV0dXJue2hlYWQ6dCxwcmVmaXg6cyxzY2FsYXI6ZSxwb2ludDpyLHBvaW50Qnl0ZXM6b319LEw9bj0+SyhCKG4sMzIpKS50aGVuKG50KSxVPW49Pm50KEYoQihuLDMyKSkpLGR0PW49PkwobikudGhlbih0PT50LnBvaW50Qnl0ZXMpLHl0PW49PlUobikucG9pbnRCeXRlcztmdW5jdGlvbiBZKG4sdCl7cmV0dXJuIG4/Syh0Lmhhc2hhYmxlKS50aGVuKHQuZmluaXNoKTp0LmZpbmlzaChGKHQuaGFzaGFibGUpKX12YXIgc3Q9KG4sdCxzKT0+e2xldHtwb2ludEJ5dGVzOmUsc2NhbGFyOnJ9PW4sbz1UKHQpLGk9dy5tdWwobykudG9SYXdCeXRlcygpO3JldHVybntoYXNoYWJsZTpTKGksZSxzKSxmaW5pc2g6ZD0+e2xldCBhPWMobytUKGQpKnIsRSk7cmV0dXJuIFgoUyhpLCQoYSkpLDY0KX19fSxodD1hc3luYyhuLHQpPT57bGV0IHM9QihuKSxlPWF3YWl0IEwodCkscj1hd2FpdCBLKGUucHJlZml4LHMpO3JldHVybiBZKCEwLHN0KGUscixzKSl9LGJ0PShuLHQpPT57bGV0IHM9QihuKSxlPVUodCkscj1GKGUucHJlZml4LHMpO3JldHVybiBZKCExLHN0KGUscixzKSl9LGV0PShuLHQscyk9Pnt0PUIodCksbj1CKG4sNjQpO2xldCBlPXguZnJvbUhleChzLCExKSxyPXguZnJvbUhleChuLnNsaWNlKDAsMzIpLCExKSxvPUkobi5zbGljZSgzMiw2NCkpLGk9dy5tdWwobywhMSk7cmV0dXJue2hhc2hhYmxlOlMoci50b1Jhd0J5dGVzKCksZS50b1Jhd0J5dGVzKCksdCksZmluaXNoOmQ9PntsZXQgYT1UKGQpO3JldHVybiByLmFkZChlLm11bChhLCExKSkuYWRkKGkubmVnYXRlKCkpLmNsZWFyQ29mYWN0b3IoKS5pczAoKX19fSxwdD1hc3luYyhuLHQscyk9PlkoITAsZXQobix0LHMpKSx4dD0obix0LHMpPT5ZKCExLGV0KG4sdCxzKSksVz0oKT0+dHlwZW9mIGdsb2JhbFRoaXM9PSJvYmplY3QiJiYiY3J5cHRvImluIGdsb2JhbFRoaXM/Z2xvYmFsVGhpcy5jcnlwdG86dm9pZCAwLFY9e2J5dGVzVG9IZXg6QyxoZXhUb0J5dGVzOkcsY29uY2F0Qnl0ZXM6Uyxtb2Q6YyxpbnZlcnQ6dHQscmFuZG9tQnl0ZXM6bj0+e2xldCB0PVcoKTtyZXR1cm4gdHx8YigiY3J5cHRvLmdldFJhbmRvbVZhbHVlcyBtdXN0IGJlIGRlZmluZWQiKSx0LmdldFJhbmRvbVZhbHVlcyhaKG4pKX0sc2hhNTEyQXN5bmM6YXN5bmMoLi4ubik9PntsZXQgdD1XKCk7dHx8YigiY3J5cHRvLnN1YnRsZSBvciBldGMuc2hhNTEyQXN5bmMgbXVzdCBiZSBkZWZpbmVkIik7bGV0IHM9UyguLi5uKTtyZXR1cm4gWihhd2FpdCB0LnN1YnRsZS5kaWdlc3QoIlNIQS01MTIiLHMuYnVmZmVyKSl9LHNoYTUxMlN5bmM6dm9pZCAwfTtPYmplY3QuZGVmaW5lUHJvcGVydGllcyhWLHtzaGE1MTJTeW5jOntjb25maWd1cmFibGU6ITEsZ2V0KCl7cmV0dXJuIF99LHNldChuKXtffHwoXz1uKX19fSk7dmFyIHd0PXtnZXRFeHRlbmRlZFB1YmxpY0tleUFzeW5jOkwsZ2V0RXh0ZW5kZWRQdWJsaWNLZXk6VSxyYW5kb21Qcml2YXRlS2V5OigpPT5WLnJhbmRvbUJ5dGVzKDMyKSxwcmVjb21wdXRlKG49OCx0PXcpe3JldHVybiB0Lm11bHRpcGx5KDNuKSx0fX0sZz04LHV0PSgpPT57bGV0IG49W10sdD0yNTYvZysxLHM9dyxlPXM7Zm9yKGxldCByPTA7cjx0O3IrKyl7ZT1zLG4ucHVzaChlKTtmb3IobGV0IG89MTtvPDIqKihnLTEpO28rKyllPWUuYWRkKHMpLG4ucHVzaChlKTtzPWUuZG91YmxlKCl9cmV0dXJuIG59LGZ0PW49PntsZXQgdD1EfHwoRD11dCgpKSxzPShhLHUpPT57bGV0IGg9dS5uZWdhdGUoKTtyZXR1cm4gYT9oOnV9LGU9UCxyPXcsbz0xKzI1Ni9nLGk9MioqKGctMSksbD1CaWdJbnQoMioqZy0xKSxmPTIqKmcsZD1CaWdJbnQoZyk7Zm9yKGxldCBhPTA7YTxvO2ErKyl7bGV0IHU9YSppLGg9TnVtYmVyKG4mbCk7bj4+PWQsaD5pJiYoaC09ZixuKz0xbik7bGV0IG09dSxBPXUrTWF0aC5hYnMoaCktMSxSPWElMiE9PTAsdj1oPDA7aD09PTA/cj1yLmFkZChzKFIsdFttXSkpOmU9ZS5hZGQocyh2LHRbQV0pKX1yZXR1cm57cDplLGY6cn19O2V4cG9ydHtIIGFzIENVUlZFLHggYXMgRXh0ZW5kZWRQb2ludCxWIGFzIGV0Yyx5dCBhcyBnZXRQdWJsaWNLZXksZHQgYXMgZ2V0UHVibGljS2V5QXN5bmMsYnQgYXMgc2lnbixodCBhcyBzaWduQXN5bmMsd3QgYXMgdXRpbHMseHQgYXMgdmVyaWZ5LHB0IGFzIHZlcmlmeUFzeW5jfTsKLyohIEJ1bmRsZWQgbGljZW5zZSBpbmZvcm1hdGlvbjoKCkBub2JsZS9lZDI1NTE5L2luZGV4LmpzOgogICgqISBub2JsZS1lZDI1NTE5IC0gTUlUIExpY2Vuc2UgKGMpIDIwMTkgUGF1bCBNaWxsZXIgKHBhdWxtaWxsci5jb20pICopCiovCi8vIyBzb3VyY2VNYXBwaW5nVVJMPWVkMjU1MTkuYnVuZGxlLm1qcy5tYXA=");
+            const sha512Mod =
+                await import("data:text/javascript;base64,LyogZXNtLnNoIC0gQG5vYmxlL2hhc2hlc0AxLjMuMy9zaGE1MTIgKi8KZnVuY3Rpb24gUCh0KXtyZXR1cm4gdCBpbnN0YW5jZW9mIFVpbnQ4QXJyYXl8fHQhPW51bGwmJnR5cGVvZiB0PT0ib2JqZWN0IiYmdC5jb25zdHJ1Y3Rvci5uYW1lPT09IlVpbnQ4QXJyYXkifWZ1bmN0aW9uIFEodCwuLi5lKXtpZighUCh0KSl0aHJvdyBuZXcgRXJyb3IoIkV4cGVjdGVkIFVpbnQ4QXJyYXkiKTtpZihlLmxlbmd0aD4wJiYhZS5pbmNsdWRlcyh0Lmxlbmd0aCkpdGhyb3cgbmV3IEVycm9yKGBFeHBlY3RlZCBVaW50OEFycmF5IG9mIGxlbmd0aCAke2V9LCBub3Qgb2YgbGVuZ3RoPSR7dC5sZW5ndGh9YCl9ZnVuY3Rpb24gTSh0LGU9ITApe2lmKHQuZGVzdHJveWVkKXRocm93IG5ldyBFcnJvcigiSGFzaCBpbnN0YW5jZSBoYXMgYmVlbiBkZXN0cm95ZWQiKTtpZihlJiZ0LmZpbmlzaGVkKXRocm93IG5ldyBFcnJvcigiSGFzaCNkaWdlc3QoKSBoYXMgYWxyZWFkeSBiZWVuIGNhbGxlZCIpfWZ1bmN0aW9uIFgodCxlKXtRKHQpO2xldCBuPWUub3V0cHV0TGVuO2lmKHQubGVuZ3RoPG4pdGhyb3cgbmV3IEVycm9yKGBkaWdlc3RJbnRvKCkgZXhwZWN0cyBvdXRwdXQgYnVmZmVyIG9mIGxlbmd0aCBhdCBsZWFzdCAke259YCl9ZnVuY3Rpb24gWSh0KXtyZXR1cm4gdCBpbnN0YW5jZW9mIFVpbnQ4QXJyYXl8fHQhPW51bGwmJnR5cGVvZiB0PT0ib2JqZWN0IiYmdC5jb25zdHJ1Y3Rvci5uYW1lPT09IlVpbnQ4QXJyYXkifXZhciBHPXQ9Pm5ldyBEYXRhVmlldyh0LmJ1ZmZlcix0LmJ5dGVPZmZzZXQsdC5ieXRlTGVuZ3RoKTt2YXIgWj1uZXcgVWludDhBcnJheShuZXcgVWludDMyQXJyYXkoWzI4NzQ1NDAyMF0pLmJ1ZmZlcilbMF09PT02ODtpZighWil0aHJvdyBuZXcgRXJyb3IoIk5vbiBsaXR0bGUtZW5kaWFuIGhhcmR3YXJlIGlzIG5vdCBzdXBwb3J0ZWQiKTtmdW5jdGlvbiB2KHQpe2lmKHR5cGVvZiB0IT0ic3RyaW5nIil0aHJvdyBuZXcgRXJyb3IoYHV0ZjhUb0J5dGVzIGV4cGVjdGVkIHN0cmluZywgZ290ICR7dHlwZW9mIHR9YCk7cmV0dXJuIG5ldyBVaW50OEFycmF5KG5ldyBUZXh0RW5jb2RlcigpLmVuY29kZSh0KSl9ZnVuY3Rpb24gVih0KXtpZih0eXBlb2YgdD09InN0cmluZyImJih0PXYodCkpLCFZKHQpKXRocm93IG5ldyBFcnJvcihgZXhwZWN0ZWQgVWludDhBcnJheSwgZ290ICR7dHlwZW9mIHR9YCk7cmV0dXJuIHR9dmFyIEY9Y2xhc3N7Y2xvbmUoKXtyZXR1cm4gdGhpcy5fY2xvbmVJbnRvKCl9fSxfdD17fS50b1N0cmluZztmdW5jdGlvbiBTKHQpe2xldCBlPW89PnQoKS51cGRhdGUoVihvKSkuZGlnZXN0KCksbj10KCk7cmV0dXJuIGUub3V0cHV0TGVuPW4ub3V0cHV0TGVuLGUuYmxvY2tMZW49bi5ibG9ja0xlbixlLmNyZWF0ZT0oKT0+dCgpLGV9ZnVuY3Rpb24gdHQodCxlLG4sbyl7aWYodHlwZW9mIHQuc2V0QmlnVWludDY0PT0iZnVuY3Rpb24iKXJldHVybiB0LnNldEJpZ1VpbnQ2NChlLG4sbyk7bGV0IHM9QmlnSW50KDMyKSxjPUJpZ0ludCg0Mjk0OTY3Mjk1KSxpPU51bWJlcihuPj5zJmMpLGE9TnVtYmVyKG4mYyksZD1vPzQ6MCx4PW8/MDo0O3Quc2V0VWludDMyKGUrZCxpLG8pLHQuc2V0VWludDMyKGUreCxhLG8pfXZhciBJPWNsYXNzIGV4dGVuZHMgRntjb25zdHJ1Y3RvcihlLG4sbyxzKXtzdXBlcigpLHRoaXMuYmxvY2tMZW49ZSx0aGlzLm91dHB1dExlbj1uLHRoaXMucGFkT2Zmc2V0PW8sdGhpcy5pc0xFPXMsdGhpcy5maW5pc2hlZD0hMSx0aGlzLmxlbmd0aD0wLHRoaXMucG9zPTAsdGhpcy5kZXN0cm95ZWQ9ITEsdGhpcy5idWZmZXI9bmV3IFVpbnQ4QXJyYXkoZSksdGhpcy52aWV3PUcodGhpcy5idWZmZXIpfXVwZGF0ZShlKXtNKHRoaXMpO2xldHt2aWV3Om4sYnVmZmVyOm8sYmxvY2tMZW46c309dGhpcztlPVYoZSk7bGV0IGM9ZS5sZW5ndGg7Zm9yKGxldCBpPTA7aTxjOyl7bGV0IGE9TWF0aC5taW4ocy10aGlzLnBvcyxjLWkpO2lmKGE9PT1zKXtsZXQgZD1HKGUpO2Zvcig7czw9Yy1pO2krPXMpdGhpcy5wcm9jZXNzKGQsaSk7Y29udGludWV9by5zZXQoZS5zdWJhcnJheShpLGkrYSksdGhpcy5wb3MpLHRoaXMucG9zKz1hLGkrPWEsdGhpcy5wb3M9PT1zJiYodGhpcy5wcm9jZXNzKG4sMCksdGhpcy5wb3M9MCl9cmV0dXJuIHRoaXMubGVuZ3RoKz1lLmxlbmd0aCx0aGlzLnJvdW5kQ2xlYW4oKSx0aGlzfWRpZ2VzdEludG8oZSl7TSh0aGlzKSxYKGUsdGhpcyksdGhpcy5maW5pc2hlZD0hMDtsZXR7YnVmZmVyOm4sdmlldzpvLGJsb2NrTGVuOnMsaXNMRTpjfT10aGlzLHtwb3M6aX09dGhpcztuW2krK109MTI4LHRoaXMuYnVmZmVyLnN1YmFycmF5KGkpLmZpbGwoMCksdGhpcy5wYWRPZmZzZXQ+cy1pJiYodGhpcy5wcm9jZXNzKG8sMCksaT0wKTtmb3IobGV0IGg9aTtoPHM7aCsrKW5baF09MDt0dChvLHMtOCxCaWdJbnQodGhpcy5sZW5ndGgqOCksYyksdGhpcy5wcm9jZXNzKG8sMCk7bGV0IGE9RyhlKSxkPXRoaXMub3V0cHV0TGVuO2lmKGQlNCl0aHJvdyBuZXcgRXJyb3IoIl9zaGEyOiBvdXRwdXRMZW4gc2hvdWxkIGJlIGFsaWduZWQgdG8gMzJiaXQiKTtsZXQgeD1kLzQsYj10aGlzLmdldCgpO2lmKHg+Yi5sZW5ndGgpdGhyb3cgbmV3IEVycm9yKCJfc2hhMjogb3V0cHV0TGVuIGJpZ2dlciB0aGFuIHN0YXRlIik7Zm9yKGxldCBoPTA7aDx4O2grKylhLnNldFVpbnQzMig0KmgsYltoXSxjKX1kaWdlc3QoKXtsZXR7YnVmZmVyOmUsb3V0cHV0TGVuOm59PXRoaXM7dGhpcy5kaWdlc3RJbnRvKGUpO2xldCBvPWUuc2xpY2UoMCxuKTtyZXR1cm4gdGhpcy5kZXN0cm95KCksb31fY2xvbmVJbnRvKGUpe2V8fChlPW5ldyB0aGlzLmNvbnN0cnVjdG9yKSxlLnNldCguLi50aGlzLmdldCgpKTtsZXR7YmxvY2tMZW46bixidWZmZXI6byxsZW5ndGg6cyxmaW5pc2hlZDpjLGRlc3Ryb3llZDppLHBvczphfT10aGlzO3JldHVybiBlLmxlbmd0aD1zLGUucG9zPWEsZS5maW5pc2hlZD1jLGUuZGVzdHJveWVkPWkscyVuJiZlLmJ1ZmZlci5zZXQobyksZX19O3ZhciBrPUJpZ0ludCg0Mjk0OTY3Mjk1KSwkPUJpZ0ludCgzMik7ZnVuY3Rpb24gcSh0LGU9ITEpe3JldHVybiBlP3toOk51bWJlcih0JmspLGw6TnVtYmVyKHQ+PiQmayl9OntoOk51bWJlcih0Pj4kJmspfDAsbDpOdW1iZXIodCZrKXwwfX1mdW5jdGlvbiBldCh0LGU9ITEpe2xldCBuPW5ldyBVaW50MzJBcnJheSh0Lmxlbmd0aCksbz1uZXcgVWludDMyQXJyYXkodC5sZW5ndGgpO2ZvcihsZXQgcz0wO3M8dC5sZW5ndGg7cysrKXtsZXR7aDpjLGw6aX09cSh0W3NdLGUpO1tuW3NdLG9bc11dPVtjLGldfXJldHVybltuLG9dfXZhciBudD0odCxlKT0+QmlnSW50KHQ+Pj4wKTw8JHxCaWdJbnQoZT4+PjApLG90PSh0LGUsbik9PnQ+Pj5uLHN0PSh0LGUsbik9PnQ8PDMyLW58ZT4+Pm4scnQ9KHQsZSxuKT0+dD4+Pm58ZTw8MzItbixpdD0odCxlLG4pPT50PDwzMi1ufGU+Pj5uLGN0PSh0LGUsbik9PnQ8PDY0LW58ZT4+Pm4tMzIsaHQ9KHQsZSxuKT0+dD4+Pm4tMzJ8ZTw8NjQtbixmdD0odCxlKT0+ZSxhdD0odCxlKT0+dCxkdD0odCxlLG4pPT50PDxufGU+Pj4zMi1uLGx0PSh0LGUsbik9PmU8PG58dD4+PjMyLW4seHQ9KHQsZSxuKT0+ZTw8bi0zMnx0Pj4+NjQtbixidD0odCxlLG4pPT50PDxuLTMyfGU+Pj42NC1uO2Z1bmN0aW9uIHV0KHQsZSxuLG8pe2xldCBzPShlPj4+MCkrKG8+Pj4wKTtyZXR1cm57aDp0K24rKHMvMioqMzJ8MCl8MCxsOnN8MH19dmFyIHB0PSh0LGUsbik9Pih0Pj4+MCkrKGU+Pj4wKSsobj4+PjApLGd0PSh0LGUsbixvKT0+ZStuK28rKHQvMioqMzJ8MCl8MCx3dD0odCxlLG4sbyk9Pih0Pj4+MCkrKGU+Pj4wKSsobj4+PjApKyhvPj4+MCkseXQ9KHQsZSxuLG8scyk9PmUrbitvK3MrKHQvMioqMzJ8MCl8MCxMdD0odCxlLG4sbyxzKT0+KHQ+Pj4wKSsoZT4+PjApKyhuPj4+MCkrKG8+Pj4wKSsocz4+PjApLEJ0PSh0LGUsbixvLHMsYyk9PmUrbitvK3MrYysodC8yKiozMnwwKXwwO3ZhciBBdD17ZnJvbUJpZzpxLHNwbGl0OmV0LHRvQmlnOm50LHNoclNIOm90LHNoclNMOnN0LHJvdHJTSDpydCxyb3RyU0w6aXQscm90ckJIOmN0LHJvdHJCTDpodCxyb3RyMzJIOmZ0LHJvdHIzMkw6YXQscm90bFNIOmR0LHJvdGxTTDpsdCxyb3RsQkg6eHQscm90bEJMOmJ0LGFkZDp1dCxhZGQzTDpwdCxhZGQzSDpndCxhZGQ0TDp3dCxhZGQ0SDp5dCxhZGQ1SDpCdCxhZGQ1TDpMdH0scj1BdDt2YXJbSHQsbXRdPXIuc3BsaXQoWyIweDQyOGEyZjk4ZDcyOGFlMjIiLCIweDcxMzc0NDkxMjNlZjY1Y2QiLCIweGI1YzBmYmNmZWM0ZDNiMmYiLCIweGU5YjVkYmE1ODE4OWRiYmMiLCIweDM5NTZjMjViZjM0OGI1MzgiLCIweDU5ZjExMWYxYjYwNWQwMTkiLCIweDkyM2Y4MmE0YWYxOTRmOWIiLCIweGFiMWM1ZWQ1ZGE2ZDgxMTgiLCIweGQ4MDdhYTk4YTMwMzAyNDIiLCIweDEyODM1YjAxNDU3MDZmYmUiLCIweDI0MzE4NWJlNGVlNGIyOGMiLCIweDU1MGM3ZGMzZDVmZmI0ZTIiLCIweDcyYmU1ZDc0ZjI3Yjg5NmYiLCIweDgwZGViMWZlM2IxNjk2YjEiLCIweDliZGMwNmE3MjVjNzEyMzUiLCIweGMxOWJmMTc0Y2Y2OTI2OTQiLCIweGU0OWI2OWMxOWVmMTRhZDIiLCIweGVmYmU0Nzg2Mzg0ZjI1ZTMiLCIweDBmYzE5ZGM2OGI4Y2Q1YjUiLCIweDI0MGNhMWNjNzdhYzljNjUiLCIweDJkZTkyYzZmNTkyYjAyNzUiLCIweDRhNzQ4NGFhNmVhNmU0ODMiLCIweDVjYjBhOWRjYmQ0MWZiZDQiLCIweDc2Zjk4OGRhODMxMTUzYjUiLCIweDk4M2U1MTUyZWU2NmRmYWIiLCIweGE4MzFjNjZkMmRiNDMyMTAiLCIweGIwMDMyN2M4OThmYjIxM2YiLCIweGJmNTk3ZmM3YmVlZjBlZTQiLCIweGM2ZTAwYmYzM2RhODhmYzIiLCIweGQ1YTc5MTQ3OTMwYWE3MjUiLCIweDA2Y2E2MzUxZTAwMzgyNmYiLCIweDE0MjkyOTY3MGEwZTZlNzAiLCIweDI3YjcwYTg1NDZkMjJmZmMiLCIweDJlMWIyMTM4NWMyNmM5MjYiLCIweDRkMmM2ZGZjNWFjNDJhZWQiLCIweDUzMzgwZDEzOWQ5NWIzZGYiLCIweDY1MGE3MzU0OGJhZjYzZGUiLCIweDc2NmEwYWJiM2M3N2IyYTgiLCIweDgxYzJjOTJlNDdlZGFlZTYiLCIweDkyNzIyYzg1MTQ4MjM1M2IiLCIweGEyYmZlOGExNGNmMTAzNjQiLCIweGE4MWE2NjRiYmM0MjMwMDEiLCIweGMyNGI4YjcwZDBmODk3OTEiLCIweGM3NmM1MWEzMDY1NGJlMzAiLCIweGQxOTJlODE5ZDZlZjUyMTgiLCIweGQ2OTkwNjI0NTU2NWE5MTAiLCIweGY0MGUzNTg1NTc3MTIwMmEiLCIweDEwNmFhMDcwMzJiYmQxYjgiLCIweDE5YTRjMTE2YjhkMmQwYzgiLCIweDFlMzc2YzA4NTE0MWFiNTMiLCIweDI3NDg3NzRjZGY4ZWViOTkiLCIweDM0YjBiY2I1ZTE5YjQ4YTgiLCIweDM5MWMwY2IzYzVjOTVhNjMiLCIweDRlZDhhYTRhZTM0MThhY2IiLCIweDViOWNjYTRmNzc2M2UzNzMiLCIweDY4MmU2ZmYzZDZiMmI4YTMiLCIweDc0OGY4MmVlNWRlZmIyZmMiLCIweDc4YTU2MzZmNDMxNzJmNjAiLCIweDg0Yzg3ODE0YTFmMGFiNzIiLCIweDhjYzcwMjA4MWE2NDM5ZWMiLCIweDkwYmVmZmZhMjM2MzFlMjgiLCIweGE0NTA2Y2ViZGU4MmJkZTkiLCIweGJlZjlhM2Y3YjJjNjc5MTUiLCIweGM2NzE3OGYyZTM3MjUzMmIiLCIweGNhMjczZWNlZWEyNjYxOWMiLCIweGQxODZiOGM3MjFjMGMyMDciLCIweGVhZGE3ZGQ2Y2RlMGViMWUiLCIweGY1N2Q0ZjdmZWU2ZWQxNzgiLCIweDA2ZjA2N2FhNzIxNzZmYmEiLCIweDBhNjM3ZGM1YTJjODk4YTYiLCIweDExM2Y5ODA0YmVmOTBkYWUiLCIweDFiNzEwYjM1MTMxYzQ3MWIiLCIweDI4ZGI3N2Y1MjMwNDdkODQiLCIweDMyY2FhYjdiNDBjNzI0OTMiLCIweDNjOWViZTBhMTVjOWJlYmMiLCIweDQzMWQ2N2M0OWMxMDBkNGMiLCIweDRjYzVkNGJlY2IzZTQyYjYiLCIweDU5N2YyOTljZmM2NTdlMmEiLCIweDVmY2I2ZmFiM2FkNmZhZWMiLCIweDZjNDQxOThjNGE0NzU4MTciXS5tYXAodD0+QmlnSW50KHQpKSksSD1uZXcgVWludDMyQXJyYXkoODApLG09bmV3IFVpbnQzMkFycmF5KDgwKSxFPWNsYXNzIGV4dGVuZHMgSXtjb25zdHJ1Y3Rvcigpe3N1cGVyKDEyOCw2NCwxNiwhMSksdGhpcy5BaD0xNzc5MDMzNzAzLHRoaXMuQWw9LTIwNTczMTU3Nix0aGlzLkJoPS0xMTUwODMzMDE5LHRoaXMuQmw9LTIwNjcwOTM3MDEsdGhpcy5DaD0xMDEzOTA0MjQyLHRoaXMuQ2w9LTIzNzkxNTczLHRoaXMuRGg9LTE1MjE0ODY1MzQsdGhpcy5EbD0xNTk1NzUwMTI5LHRoaXMuRWg9MTM1OTg5MzExOSx0aGlzLkVsPS0xMzc3NDAyMTU5LHRoaXMuRmg9LTE2OTQxNDQzNzIsdGhpcy5GbD03MjU1MTExOTksdGhpcy5HaD01Mjg3MzQ2MzUsdGhpcy5HbD0tNzk1Nzc3NDksdGhpcy5IaD0xNTQxNDU5MjI1LHRoaXMuSGw9MzI3MDMzMjA5fWdldCgpe2xldHtBaDplLEFsOm4sQmg6byxCbDpzLENoOmMsQ2w6aSxEaDphLERsOmQsRWg6eCxFbDpiLEZoOmgsRmw6bCxHaDp1LEdsOnAsSGg6ZyxIbDp3fT10aGlzO3JldHVybltlLG4sbyxzLGMsaSxhLGQseCxiLGgsbCx1LHAsZyx3XX1zZXQoZSxuLG8scyxjLGksYSxkLHgsYixoLGwsdSxwLGcsdyl7dGhpcy5BaD1lfDAsdGhpcy5BbD1ufDAsdGhpcy5CaD1vfDAsdGhpcy5CbD1zfDAsdGhpcy5DaD1jfDAsdGhpcy5DbD1pfDAsdGhpcy5EaD1hfDAsdGhpcy5EbD1kfDAsdGhpcy5FaD14fDAsdGhpcy5FbD1ifDAsdGhpcy5GaD1ofDAsdGhpcy5GbD1sfDAsdGhpcy5HaD11fDAsdGhpcy5HbD1wfDAsdGhpcy5IaD1nfDAsdGhpcy5IbD13fDB9cHJvY2VzcyhlLG4pe2ZvcihsZXQgZj0wO2Y8MTY7ZisrLG4rPTQpSFtmXT1lLmdldFVpbnQzMihuKSxtW2ZdPWUuZ2V0VWludDMyKG4rPTQpO2ZvcihsZXQgZj0xNjtmPDgwO2YrKyl7bGV0IEI9SFtmLTE1XXwwLEE9bVtmLTE1XXwwLE89ci5yb3RyU0goQixBLDEpXnIucm90clNIKEIsQSw4KV5yLnNoclNIKEIsQSw3KSxUPXIucm90clNMKEIsQSwxKV5yLnJvdHJTTChCLEEsOCleci5zaHJTTChCLEEsNykseT1IW2YtMl18MCxMPW1bZi0yXXwwLEM9ci5yb3RyU0goeSxMLDE5KV5yLnJvdHJCSCh5LEwsNjEpXnIuc2hyU0goeSxMLDYpLFc9ci5yb3RyU0woeSxMLDE5KV5yLnJvdHJCTCh5LEwsNjEpXnIuc2hyU0woeSxMLDYpLEQ9ci5hZGQ0TChULFcsbVtmLTddLG1bZi0xNl0pLE49ci5hZGQ0SChELE8sQyxIW2YtN10sSFtmLTE2XSk7SFtmXT1OfDAsbVtmXT1EfDB9bGV0e0FoOm8sQWw6cyxCaDpjLEJsOmksQ2g6YSxDbDpkLERoOngsRGw6YixFaDpoLEVsOmwsRmg6dSxGbDpwLEdoOmcsR2w6dyxIaDpfLEhsOlV9PXRoaXM7Zm9yKGxldCBmPTA7Zjw4MDtmKyspe2xldCBCPXIucm90clNIKGgsbCwxNCleci5yb3RyU0goaCxsLDE4KV5yLnJvdHJCSChoLGwsNDEpLEE9ci5yb3RyU0woaCxsLDE0KV5yLnJvdHJTTChoLGwsMTgpXnIucm90ckJMKGgsbCw0MSksTz1oJnVefmgmZyxUPWwmcF5+bCZ3LHk9ci5hZGQ1TChVLEEsVCxtdFtmXSxtW2ZdKSxMPXIuYWRkNUgoeSxfLEIsTyxIdFtmXSxIW2ZdKSxDPXl8MCxXPXIucm90clNIKG8scywyOCleci5yb3RyQkgobyxzLDM0KV5yLnJvdHJCSChvLHMsMzkpLEQ9ci5yb3RyU0wobyxzLDI4KV5yLnJvdHJCTChvLHMsMzQpXnIucm90ckJMKG8scywzOSksTj1vJmNebyZhXmMmYSx6PXMmaV5zJmReaSZkO189Z3wwLFU9d3wwLGc9dXwwLHc9cHwwLHU9aHwwLHA9bHwwLHtoLGx9PXIuYWRkKHh8MCxifDAsTHwwLEN8MCkseD1hfDAsYj1kfDAsYT1jfDAsZD1pfDAsYz1vfDAsaT1zfDA7bGV0IEo9ci5hZGQzTChDLEQseik7bz1yLmFkZDNIKEosTCxXLE4pLHM9SnwwfSh7aDpvLGw6c309ci5hZGQodGhpcy5BaHwwLHRoaXMuQWx8MCxvfDAsc3wwKSkse2g6YyxsOml9PXIuYWRkKHRoaXMuQmh8MCx0aGlzLkJsfDAsY3wwLGl8MCkse2g6YSxsOmR9PXIuYWRkKHRoaXMuQ2h8MCx0aGlzLkNsfDAsYXwwLGR8MCkse2g6eCxsOmJ9PXIuYWRkKHRoaXMuRGh8MCx0aGlzLkRsfDAseHwwLGJ8MCkse2gsbH09ci5hZGQodGhpcy5FaHwwLHRoaXMuRWx8MCxofDAsbHwwKSx7aDp1LGw6cH09ci5hZGQodGhpcy5GaHwwLHRoaXMuRmx8MCx1fDAscHwwKSx7aDpnLGw6d309ci5hZGQodGhpcy5HaHwwLHRoaXMuR2x8MCxnfDAsd3wwKSx7aDpfLGw6VX09ci5hZGQodGhpcy5IaHwwLHRoaXMuSGx8MCxffDAsVXwwKSx0aGlzLnNldChvLHMsYyxpLGEsZCx4LGIsaCxsLHUscCxnLHcsXyxVKX1yb3VuZENsZWFuKCl7SC5maWxsKDApLG0uZmlsbCgwKX1kZXN0cm95KCl7dGhpcy5idWZmZXIuZmlsbCgwKSx0aGlzLnNldCgwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwKX19LGo9Y2xhc3MgZXh0ZW5kcyBFe2NvbnN0cnVjdG9yKCl7c3VwZXIoKSx0aGlzLkFoPS0xOTQyMTQ1MDgwLHRoaXMuQWw9NDI0OTU1Mjk4LHRoaXMuQmg9MTk0NDE2NDcxMCx0aGlzLkJsPS0xOTgyMDE2Mjk4LHRoaXMuQ2g9NTAyOTcwMjg2LHRoaXMuQ2w9ODU1NjEyNTQ2LHRoaXMuRGg9MTczODM5Njk0OCx0aGlzLkRsPTE0Nzk1MTYxMTEsdGhpcy5FaD0yNTg4MTI3NzcsdGhpcy5FbD0yMDc3NTExMDgwLHRoaXMuRmg9MjAxMTM5MzkwNyx0aGlzLkZsPTc5OTg5MDU4LHRoaXMuR2g9MTA2NzI4Nzk3Nix0aGlzLkdsPTE3ODAyOTk0NjQsdGhpcy5IaD0yODY0NTEzNzMsdGhpcy5IbD0tMTg0ODIwODczNSx0aGlzLm91dHB1dExlbj0yOH19LEs9Y2xhc3MgZXh0ZW5kcyBFe2NvbnN0cnVjdG9yKCl7c3VwZXIoKSx0aGlzLkFoPTU3MzY0NTIwNCx0aGlzLkFsPS02NDIyNzU0MCx0aGlzLkJoPS0xNjIxNzk0OTA5LHRoaXMuQmw9LTkzNDUxNzU2Nix0aGlzLkNoPTU5Njg4MzU2Myx0aGlzLkNsPTE4Njc3NTU4NTcsdGhpcy5EaD0tMTc3NDY4NDM5MSx0aGlzLkRsPTE0OTc0MjY2MjEsdGhpcy5FaD0tMTc3NTc0NzM1OCx0aGlzLkVsPS0xNDY3MDIzMzg5LHRoaXMuRmg9LTExMDExMjgxNTUsdGhpcy5GbD0xNDAxMzA1NDkwLHRoaXMuR2g9NzIxNTI1MjQ0LHRoaXMuR2w9NzQ2OTYxMDY2LHRoaXMuSGg9MjQ2ODg1ODUyLHRoaXMuSGw9LTIxMTc3ODQ0MTQsdGhpcy5vdXRwdXRMZW49MzJ9fSxSPWNsYXNzIGV4dGVuZHMgRXtjb25zdHJ1Y3Rvcigpe3N1cGVyKCksdGhpcy5BaD0tODc2ODk2OTMxLHRoaXMuQWw9LTEwNTY1OTYyNjQsdGhpcy5CaD0xNjU0MjcwMjUwLHRoaXMuQmw9OTE0MTUwNjYzLHRoaXMuQ2g9LTE4NTY0Mzc5MjYsdGhpcy5DbD04MTI3MDI5OTksdGhpcy5EaD0zNTU0NjIzNjAsdGhpcy5EbD0tMTUwMDU0NTk5LHRoaXMuRWg9MTczMTQwNTQxNSx0aGlzLkVsPS00MTkxNDM5LHRoaXMuRmg9LTE5MDA3ODcwNjUsdGhpcy5GbD0xNzUwNjAzMDI1LHRoaXMuR2g9LTYxOTk1ODc3MSx0aGlzLkdsPTE2OTQwNzY4MzksdGhpcy5IaD0xMjAzMDYyODEzLHRoaXMuSGw9LTEwOTA4OTE4NjgsdGhpcy5vdXRwdXRMZW49NDh9fSxPdD1TKCgpPT5uZXcgRSksVHQ9UygoKT0+bmV3IGopLFd0PVMoKCk9Pm5ldyBLKSxOdD1TKCgpPT5uZXcgUik7ZXhwb3J0e0UgYXMgU0hBNTEyLE50IGFzIHNoYTM4NCxPdCBhcyBzaGE1MTIsVHQgYXMgc2hhNTEyXzIyNCxXdCBhcyBzaGE1MTJfMjU2fTsKLyohIEJ1bmRsZWQgbGljZW5zZSBpbmZvcm1hdGlvbjoKCkBub2JsZS9oYXNoZXMvZXNtL3V0aWxzLmpzOgogICgqISBub2JsZS1oYXNoZXMgLSBNSVQgTGljZW5zZSAoYykgMjAyMiBQYXVsIE1pbGxlciAocGF1bG1pbGxyLmNvbSkgKikKKi8KLy8jIHNvdXJjZU1hcHBpbmdVUkw9c2hhNTEyLmJ1bmRsZS5tanMubWFw");
+            const sha3Mod =
+                await import("data:text/javascript;base64,LyogZXNtLnNoIC0gQG5vYmxlL2hhc2hlc0AxLjMuMy9zaGEzICovCmZ1bmN0aW9uIGcodCl7aWYoIU51bWJlci5pc1NhZmVJbnRlZ2VyKHQpfHx0PDApdGhyb3cgbmV3IEVycm9yKGBXcm9uZyBwb3NpdGl2ZSBpbnRlZ2VyOiAke3R9YCl9ZnVuY3Rpb24gUih0KXtyZXR1cm4gdCBpbnN0YW5jZW9mIFVpbnQ4QXJyYXl8fHQhPW51bGwmJnR5cGVvZiB0PT0ib2JqZWN0IiYmdC5jb25zdHJ1Y3Rvci5uYW1lPT09IlVpbnQ4QXJyYXkifWZ1bmN0aW9uIGIodCwuLi5lKXtpZighUih0KSl0aHJvdyBuZXcgRXJyb3IoIkV4cGVjdGVkIFVpbnQ4QXJyYXkiKTtpZihlLmxlbmd0aD4wJiYhZS5pbmNsdWRlcyh0Lmxlbmd0aCkpdGhyb3cgbmV3IEVycm9yKGBFeHBlY3RlZCBVaW50OEFycmF5IG9mIGxlbmd0aCAke2V9LCBub3Qgb2YgbGVuZ3RoPSR7dC5sZW5ndGh9YCl9ZnVuY3Rpb24gTCh0LGU9ITApe2lmKHQuZGVzdHJveWVkKXRocm93IG5ldyBFcnJvcigiSGFzaCBpbnN0YW5jZSBoYXMgYmVlbiBkZXN0cm95ZWQiKTtpZihlJiZ0LmZpbmlzaGVkKXRocm93IG5ldyBFcnJvcigiSGFzaCNkaWdlc3QoKSBoYXMgYWxyZWFkeSBiZWVuIGNhbGxlZCIpfWZ1bmN0aW9uIGsodCxlKXtiKHQpO2xldCBuPWUub3V0cHV0TGVuO2lmKHQubGVuZ3RoPG4pdGhyb3cgbmV3IEVycm9yKGBkaWdlc3RJbnRvKCkgZXhwZWN0cyBvdXRwdXQgYnVmZmVyIG9mIGxlbmd0aCBhdCBsZWFzdCAke259YCl9dmFyIGQ9QmlnSW50KDQyOTQ5NjcyOTUpLF89QmlnSW50KDMyKTtmdW5jdGlvbiBWKHQsZT0hMSl7cmV0dXJuIGU/e2g6TnVtYmVyKHQmZCksbDpOdW1iZXIodD4+XyZkKX06e2g6TnVtYmVyKHQ+Pl8mZCl8MCxsOk51bWJlcih0JmQpfDB9fWZ1bmN0aW9uIEEodCxlPSExKXtsZXQgbj1uZXcgVWludDMyQXJyYXkodC5sZW5ndGgpLHI9bmV3IFVpbnQzMkFycmF5KHQubGVuZ3RoKTtmb3IobGV0IHM9MDtzPHQubGVuZ3RoO3MrKyl7bGV0e2g6aSxsOm99PVYodFtzXSxlKTtbbltzXSxyW3NdXT1baSxvXX1yZXR1cm5bbixyXX12YXIgbT0odCxlLG4pPT50PDxufGU+Pj4zMi1uLEI9KHQsZSxuKT0+ZTw8bnx0Pj4+MzItbixPPSh0LGUsbik9PmU8PG4tMzJ8dD4+PjY0LW4sST0odCxlLG4pPT50PDxuLTMyfGU+Pj42NC1uO3ZhciBFPXQ9Pm5ldyBVaW50MzJBcnJheSh0LmJ1ZmZlcix0LmJ5dGVPZmZzZXQsTWF0aC5mbG9vcih0LmJ5dGVMZW5ndGgvNCkpO2Z1bmN0aW9uIE0odCl7cmV0dXJuIHQgaW5zdGFuY2VvZiBVaW50OEFycmF5fHx0IT1udWxsJiZ0eXBlb2YgdD09Im9iamVjdCImJnQuY29uc3RydWN0b3IubmFtZT09PSJVaW50OEFycmF5In12YXIgVz1uZXcgVWludDhBcnJheShuZXcgVWludDMyQXJyYXkoWzI4NzQ1NDAyMF0pLmJ1ZmZlcilbMF09PT02ODtpZighVyl0aHJvdyBuZXcgRXJyb3IoIk5vbiBsaXR0bGUtZW5kaWFuIGhhcmR3YXJlIGlzIG5vdCBzdXBwb3J0ZWQiKTtmdW5jdGlvbiBEKHQpe2lmKHR5cGVvZiB0IT0ic3RyaW5nIil0aHJvdyBuZXcgRXJyb3IoYHV0ZjhUb0J5dGVzIGV4cGVjdGVkIHN0cmluZywgZ290ICR7dHlwZW9mIHR9YCk7cmV0dXJuIG5ldyBVaW50OEFycmF5KG5ldyBUZXh0RW5jb2RlcigpLmVuY29kZSh0KSl9ZnVuY3Rpb24gdyh0KXtpZih0eXBlb2YgdD09InN0cmluZyImJih0PUQodCkpLCFNKHQpKXRocm93IG5ldyBFcnJvcihgZXhwZWN0ZWQgVWludDhBcnJheSwgZ290ICR7dHlwZW9mIHR9YCk7cmV0dXJuIHR9dmFyIHg9Y2xhc3N7Y2xvbmUoKXtyZXR1cm4gdGhpcy5fY2xvbmVJbnRvKCl9fSx0dD17fS50b1N0cmluZztmdW5jdGlvbiBVKHQpe2xldCBlPXI9PnQoKS51cGRhdGUodyhyKSkuZGlnZXN0KCksbj10KCk7cmV0dXJuIGUub3V0cHV0TGVuPW4ub3V0cHV0TGVuLGUuYmxvY2tMZW49bi5ibG9ja0xlbixlLmNyZWF0ZT0oKT0+dCgpLGV9ZnVuY3Rpb24gSCh0KXtsZXQgZT0ocixzKT0+dChzKS51cGRhdGUodyhyKSkuZGlnZXN0KCksbj10KHt9KTtyZXR1cm4gZS5vdXRwdXRMZW49bi5vdXRwdXRMZW4sZS5ibG9ja0xlbj1uLmJsb2NrTGVuLGUuY3JlYXRlPXI9PnQociksZX12YXJbRixqLFhdPVtbXSxbXSxbXV0sUD1CaWdJbnQoMCksaD1CaWdJbnQoMSksdj1CaWdJbnQoMikscT1CaWdJbnQoNyksej1CaWdJbnQoMjU2KSxHPUJpZ0ludCgxMTMpO2ZvcihsZXQgdD0wLGU9aCxuPTEscj0wO3Q8MjQ7dCsrKXtbbixyXT1bciwoMipuKzMqciklNV0sRi5wdXNoKDIqKDUqcituKSksai5wdXNoKCh0KzEpKih0KzIpLzIlNjQpO2xldCBzPVA7Zm9yKGxldCBpPTA7aTw3O2krKyllPShlPDxoXihlPj5xKSpHKSV6LGUmdiYmKHNePWg8PChoPDxCaWdJbnQoaSkpLWgpO1gucHVzaChzKX12YXJbSixLXT1BKFgsITApLFM9KHQsZSxuKT0+bj4zMj9PKHQsZSxuKTptKHQsZSxuKSxUPSh0LGUsbik9Pm4+MzI/SSh0LGUsbik6Qih0LGUsbik7ZnVuY3Rpb24gUSh0LGU9MjQpe2xldCBuPW5ldyBVaW50MzJBcnJheSgxMCk7Zm9yKGxldCByPTI0LWU7cjwyNDtyKyspe2ZvcihsZXQgbz0wO288MTA7bysrKW5bb109dFtvXV50W28rMTBdXnRbbysyMF1edFtvKzMwXV50W28rNDBdO2ZvcihsZXQgbz0wO288MTA7bys9Mil7bGV0IGM9KG8rOCklMTAscD0obysyKSUxMCxsPW5bcF0sdT1uW3ArMV0sTj1TKGwsdSwxKV5uW2NdLEM9VChsLHUsMSlebltjKzFdO2ZvcihsZXQgYT0wO2E8NTA7YSs9MTApdFtvK2FdXj1OLHRbbythKzFdXj1DfWxldCBzPXRbMl0saT10WzNdO2ZvcihsZXQgbz0wO288MjQ7bysrKXtsZXQgYz1qW29dLHA9UyhzLGksYyksbD1UKHMsaSxjKSx1PUZbb107cz10W3VdLGk9dFt1KzFdLHRbdV09cCx0W3UrMV09bH1mb3IobGV0IG89MDtvPDUwO28rPTEwKXtmb3IobGV0IGM9MDtjPDEwO2MrKyluW2NdPXRbbytjXTtmb3IobGV0IGM9MDtjPDEwO2MrKyl0W28rY11ePX5uWyhjKzIpJTEwXSZuWyhjKzQpJTEwXX10WzBdXj1KW3JdLHRbMV1ePUtbcl19bi5maWxsKDApfXZhciB5PWNsYXNzIHQgZXh0ZW5kcyB4e2NvbnN0cnVjdG9yKGUsbixyLHM9ITEsaT0yNCl7aWYoc3VwZXIoKSx0aGlzLmJsb2NrTGVuPWUsdGhpcy5zdWZmaXg9bix0aGlzLm91dHB1dExlbj1yLHRoaXMuZW5hYmxlWE9GPXMsdGhpcy5yb3VuZHM9aSx0aGlzLnBvcz0wLHRoaXMucG9zT3V0PTAsdGhpcy5maW5pc2hlZD0hMSx0aGlzLmRlc3Ryb3llZD0hMSxnKHIpLDA+PXRoaXMuYmxvY2tMZW58fHRoaXMuYmxvY2tMZW4+PTIwMCl0aHJvdyBuZXcgRXJyb3IoIlNoYTMgc3VwcG9ydHMgb25seSBrZWNjYWstZjE2MDAgZnVuY3Rpb24iKTt0aGlzLnN0YXRlPW5ldyBVaW50OEFycmF5KDIwMCksdGhpcy5zdGF0ZTMyPUUodGhpcy5zdGF0ZSl9a2VjY2FrKCl7USh0aGlzLnN0YXRlMzIsdGhpcy5yb3VuZHMpLHRoaXMucG9zT3V0PTAsdGhpcy5wb3M9MH11cGRhdGUoZSl7TCh0aGlzKTtsZXR7YmxvY2tMZW46bixzdGF0ZTpyfT10aGlzO2U9dyhlKTtsZXQgcz1lLmxlbmd0aDtmb3IobGV0IGk9MDtpPHM7KXtsZXQgbz1NYXRoLm1pbihuLXRoaXMucG9zLHMtaSk7Zm9yKGxldCBjPTA7YzxvO2MrKylyW3RoaXMucG9zKytdXj1lW2krK107dGhpcy5wb3M9PT1uJiZ0aGlzLmtlY2NhaygpfXJldHVybiB0aGlzfWZpbmlzaCgpe2lmKHRoaXMuZmluaXNoZWQpcmV0dXJuO3RoaXMuZmluaXNoZWQ9ITA7bGV0e3N0YXRlOmUsc3VmZml4Om4scG9zOnIsYmxvY2tMZW46c309dGhpcztlW3JdXj1uLChuJjEyOCkhPT0wJiZyPT09cy0xJiZ0aGlzLmtlY2NhaygpLGVbcy0xXV49MTI4LHRoaXMua2VjY2FrKCl9d3JpdGVJbnRvKGUpe0wodGhpcywhMSksYihlKSx0aGlzLmZpbmlzaCgpO2xldCBuPXRoaXMuc3RhdGUse2Jsb2NrTGVuOnJ9PXRoaXM7Zm9yKGxldCBzPTAsaT1lLmxlbmd0aDtzPGk7KXt0aGlzLnBvc091dD49ciYmdGhpcy5rZWNjYWsoKTtsZXQgbz1NYXRoLm1pbihyLXRoaXMucG9zT3V0LGktcyk7ZS5zZXQobi5zdWJhcnJheSh0aGlzLnBvc091dCx0aGlzLnBvc091dCtvKSxzKSx0aGlzLnBvc091dCs9byxzKz1vfXJldHVybiBlfXhvZkludG8oZSl7aWYoIXRoaXMuZW5hYmxlWE9GKXRocm93IG5ldyBFcnJvcigiWE9GIGlzIG5vdCBwb3NzaWJsZSBmb3IgdGhpcyBpbnN0YW5jZSIpO3JldHVybiB0aGlzLndyaXRlSW50byhlKX14b2YoZSl7cmV0dXJuIGcoZSksdGhpcy54b2ZJbnRvKG5ldyBVaW50OEFycmF5KGUpKX1kaWdlc3RJbnRvKGUpe2lmKGsoZSx0aGlzKSx0aGlzLmZpbmlzaGVkKXRocm93IG5ldyBFcnJvcigiZGlnZXN0KCkgd2FzIGFscmVhZHkgY2FsbGVkIik7cmV0dXJuIHRoaXMud3JpdGVJbnRvKGUpLHRoaXMuZGVzdHJveSgpLGV9ZGlnZXN0KCl7cmV0dXJuIHRoaXMuZGlnZXN0SW50byhuZXcgVWludDhBcnJheSh0aGlzLm91dHB1dExlbikpfWRlc3Ryb3koKXt0aGlzLmRlc3Ryb3llZD0hMCx0aGlzLnN0YXRlLmZpbGwoMCl9X2Nsb25lSW50byhlKXtsZXR7YmxvY2tMZW46bixzdWZmaXg6cixvdXRwdXRMZW46cyxyb3VuZHM6aSxlbmFibGVYT0Y6b309dGhpcztyZXR1cm4gZXx8KGU9bmV3IHQobixyLHMsbyxpKSksZS5zdGF0ZTMyLnNldCh0aGlzLnN0YXRlMzIpLGUucG9zPXRoaXMucG9zLGUucG9zT3V0PXRoaXMucG9zT3V0LGUuZmluaXNoZWQ9dGhpcy5maW5pc2hlZCxlLnJvdW5kcz1pLGUuc3VmZml4PXIsZS5vdXRwdXRMZW49cyxlLmVuYWJsZVhPRj1vLGUuZGVzdHJveWVkPXRoaXMuZGVzdHJveWVkLGV9fSxmPSh0LGUsbik9PlUoKCk9Pm5ldyB5KGUsdCxuKSksc3Q9Zig2LDE0NCwyMjQvOCksaXQ9Zig2LDEzNiwyNTYvOCksY3Q9Zig2LDEwNCwzODQvOCksZnQ9Zig2LDcyLDUxMi84KSx1dD1mKDEsMTQ0LDIyNC84KSxodD1mKDEsMTM2LDI1Ni84KSxwdD1mKDEsMTA0LDM4NC84KSxsdD1mKDEsNzIsNTEyLzgpLCQ9KHQsZSxuKT0+SCgocj17fSk9Pm5ldyB5KGUsdCxyLmRrTGVuPT09dm9pZCAwP246ci5ka0xlbiwhMCkpLGF0PSQoMzEsMTY4LDEyOC84KSxkdD0kKDMxLDEzNiwyNTYvOCk7ZXhwb3J0e3kgYXMgS2VjY2FrLFEgYXMga2VjY2FrUCx1dCBhcyBrZWNjYWtfMjI0LGh0IGFzIGtlY2Nha18yNTYscHQgYXMga2VjY2FrXzM4NCxsdCBhcyBrZWNjYWtfNTEyLHN0IGFzIHNoYTNfMjI0LGl0IGFzIHNoYTNfMjU2LGN0IGFzIHNoYTNfMzg0LGZ0IGFzIHNoYTNfNTEyLGF0IGFzIHNoYWtlMTI4LGR0IGFzIHNoYWtlMjU2fTsKLyohIEJ1bmRsZWQgbGljZW5zZSBpbmZvcm1hdGlvbjoKCkBub2JsZS9oYXNoZXMvZXNtL3V0aWxzLmpzOgogICgqISBub2JsZS1oYXNoZXMgLSBNSVQgTGljZW5zZSAoYykgMjAyMiBQYXVsIE1pbGxlciAocGF1bG1pbGxyLmNvbSkgKikKKi8KLy8jIHNvdXJjZU1hcHBpbmdVUkw9c2hhMy5idW5kbGUubWpzLm1hcA==");
+            const ripemd160Mod =
+                await import("data:text/javascript;base64,LyogZXNtLnNoIC0gQG5vYmxlL2hhc2hlc0AxLjMuMy9yaXBlbWQxNjAgKi8KZnVuY3Rpb24gSCh0KXtyZXR1cm4gdCBpbnN0YW5jZW9mIFVpbnQ4QXJyYXl8fHQhPW51bGwmJnR5cGVvZiB0PT0ib2JqZWN0IiYmdC5jb25zdHJ1Y3Rvci5uYW1lPT09IlVpbnQ4QXJyYXkifWZ1bmN0aW9uIE4odCwuLi5lKXtpZighSCh0KSl0aHJvdyBuZXcgRXJyb3IoIkV4cGVjdGVkIFVpbnQ4QXJyYXkiKTtpZihlLmxlbmd0aD4wJiYhZS5pbmNsdWRlcyh0Lmxlbmd0aCkpdGhyb3cgbmV3IEVycm9yKGBFeHBlY3RlZCBVaW50OEFycmF5IG9mIGxlbmd0aCAke2V9LCBub3Qgb2YgbGVuZ3RoPSR7dC5sZW5ndGh9YCl9ZnVuY3Rpb24gVSh0LGU9ITApe2lmKHQuZGVzdHJveWVkKXRocm93IG5ldyBFcnJvcigiSGFzaCBpbnN0YW5jZSBoYXMgYmVlbiBkZXN0cm95ZWQiKTtpZihlJiZ0LmZpbmlzaGVkKXRocm93IG5ldyBFcnJvcigiSGFzaCNkaWdlc3QoKSBoYXMgYWxyZWFkeSBiZWVuIGNhbGxlZCIpfWZ1bmN0aW9uIEIodCxlKXtOKHQpO2xldCBuPWUub3V0cHV0TGVuO2lmKHQubGVuZ3RoPG4pdGhyb3cgbmV3IEVycm9yKGBkaWdlc3RJbnRvKCkgZXhwZWN0cyBvdXRwdXQgYnVmZmVyIG9mIGxlbmd0aCBhdCBsZWFzdCAke259YCl9ZnVuY3Rpb24gVyh0KXtyZXR1cm4gdCBpbnN0YW5jZW9mIFVpbnQ4QXJyYXl8fHQhPW51bGwmJnR5cGVvZiB0PT0ib2JqZWN0IiYmdC5jb25zdHJ1Y3Rvci5uYW1lPT09IlVpbnQ4QXJyYXkifXZhciBnPXQ9Pm5ldyBEYXRhVmlldyh0LmJ1ZmZlcix0LmJ5dGVPZmZzZXQsdC5ieXRlTGVuZ3RoKTt2YXIgRD1uZXcgVWludDhBcnJheShuZXcgVWludDMyQXJyYXkoWzI4NzQ1NDAyMF0pLmJ1ZmZlcilbMF09PT02ODtpZighRCl0aHJvdyBuZXcgRXJyb3IoIk5vbiBsaXR0bGUtZW5kaWFuIGhhcmR3YXJlIGlzIG5vdCBzdXBwb3J0ZWQiKTtmdW5jdGlvbiBLKHQpe2lmKHR5cGVvZiB0IT0ic3RyaW5nIil0aHJvdyBuZXcgRXJyb3IoYHV0ZjhUb0J5dGVzIGV4cGVjdGVkIHN0cmluZywgZ290ICR7dHlwZW9mIHR9YCk7cmV0dXJuIG5ldyBVaW50OEFycmF5KG5ldyBUZXh0RW5jb2RlcigpLmVuY29kZSh0KSl9ZnVuY3Rpb24gQSh0KXtpZih0eXBlb2YgdD09InN0cmluZyImJih0PUsodCkpLCFXKHQpKXRocm93IG5ldyBFcnJvcihgZXhwZWN0ZWQgVWludDhBcnJheSwgZ290ICR7dHlwZW9mIHR9YCk7cmV0dXJuIHR9dmFyIHc9Y2xhc3N7Y2xvbmUoKXtyZXR1cm4gdGhpcy5fY2xvbmVJbnRvKCl9fSxZPXt9LnRvU3RyaW5nO2Z1bmN0aW9uIGsodCl7bGV0IGU9cj0+dCgpLnVwZGF0ZShBKHIpKS5kaWdlc3QoKSxuPXQoKTtyZXR1cm4gZS5vdXRwdXRMZW49bi5vdXRwdXRMZW4sZS5ibG9ja0xlbj1uLmJsb2NrTGVuLGUuY3JlYXRlPSgpPT50KCksZX1mdW5jdGlvbiBHKHQsZSxuLHIpe2lmKHR5cGVvZiB0LnNldEJpZ1VpbnQ2ND09ImZ1bmN0aW9uIilyZXR1cm4gdC5zZXRCaWdVaW50NjQoZSxuLHIpO2xldCBvPUJpZ0ludCgzMiksaT1CaWdJbnQoNDI5NDk2NzI5NSkscz1OdW1iZXIobj4+byZpKSxjPU51bWJlcihuJmkpLHU9cj80OjAscD1yPzA6NDt0LnNldFVpbnQzMihlK3UscyxyKSx0LnNldFVpbnQzMihlK3AsYyxyKX12YXIgeT1jbGFzcyBleHRlbmRzIHd7Y29uc3RydWN0b3IoZSxuLHIsbyl7c3VwZXIoKSx0aGlzLmJsb2NrTGVuPWUsdGhpcy5vdXRwdXRMZW49bix0aGlzLnBhZE9mZnNldD1yLHRoaXMuaXNMRT1vLHRoaXMuZmluaXNoZWQ9ITEsdGhpcy5sZW5ndGg9MCx0aGlzLnBvcz0wLHRoaXMuZGVzdHJveWVkPSExLHRoaXMuYnVmZmVyPW5ldyBVaW50OEFycmF5KGUpLHRoaXMudmlldz1nKHRoaXMuYnVmZmVyKX11cGRhdGUoZSl7VSh0aGlzKTtsZXR7dmlldzpuLGJ1ZmZlcjpyLGJsb2NrTGVuOm99PXRoaXM7ZT1BKGUpO2xldCBpPWUubGVuZ3RoO2ZvcihsZXQgcz0wO3M8aTspe2xldCBjPU1hdGgubWluKG8tdGhpcy5wb3MsaS1zKTtpZihjPT09byl7bGV0IHU9ZyhlKTtmb3IoO288PWktcztzKz1vKXRoaXMucHJvY2Vzcyh1LHMpO2NvbnRpbnVlfXIuc2V0KGUuc3ViYXJyYXkocyxzK2MpLHRoaXMucG9zKSx0aGlzLnBvcys9YyxzKz1jLHRoaXMucG9zPT09byYmKHRoaXMucHJvY2VzcyhuLDApLHRoaXMucG9zPTApfXJldHVybiB0aGlzLmxlbmd0aCs9ZS5sZW5ndGgsdGhpcy5yb3VuZENsZWFuKCksdGhpc31kaWdlc3RJbnRvKGUpe1UodGhpcyksQihlLHRoaXMpLHRoaXMuZmluaXNoZWQ9ITA7bGV0e2J1ZmZlcjpuLHZpZXc6cixibG9ja0xlbjpvLGlzTEU6aX09dGhpcyx7cG9zOnN9PXRoaXM7bltzKytdPTEyOCx0aGlzLmJ1ZmZlci5zdWJhcnJheShzKS5maWxsKDApLHRoaXMucGFkT2Zmc2V0Pm8tcyYmKHRoaXMucHJvY2VzcyhyLDApLHM9MCk7Zm9yKGxldCBmPXM7ZjxvO2YrKyluW2ZdPTA7RyhyLG8tOCxCaWdJbnQodGhpcy5sZW5ndGgqOCksaSksdGhpcy5wcm9jZXNzKHIsMCk7bGV0IGM9ZyhlKSx1PXRoaXMub3V0cHV0TGVuO2lmKHUlNCl0aHJvdyBuZXcgRXJyb3IoIl9zaGEyOiBvdXRwdXRMZW4gc2hvdWxkIGJlIGFsaWduZWQgdG8gMzJiaXQiKTtsZXQgcD11LzQsZD10aGlzLmdldCgpO2lmKHA+ZC5sZW5ndGgpdGhyb3cgbmV3IEVycm9yKCJfc2hhMjogb3V0cHV0TGVuIGJpZ2dlciB0aGFuIHN0YXRlIik7Zm9yKGxldCBmPTA7ZjxwO2YrKyljLnNldFVpbnQzMig0KmYsZFtmXSxpKX1kaWdlc3QoKXtsZXR7YnVmZmVyOmUsb3V0cHV0TGVuOm59PXRoaXM7dGhpcy5kaWdlc3RJbnRvKGUpO2xldCByPWUuc2xpY2UoMCxuKTtyZXR1cm4gdGhpcy5kZXN0cm95KCkscn1fY2xvbmVJbnRvKGUpe2V8fChlPW5ldyB0aGlzLmNvbnN0cnVjdG9yKSxlLnNldCguLi50aGlzLmdldCgpKTtsZXR7YmxvY2tMZW46bixidWZmZXI6cixsZW5ndGg6byxmaW5pc2hlZDppLGRlc3Ryb3llZDpzLHBvczpjfT10aGlzO3JldHVybiBlLmxlbmd0aD1vLGUucG9zPWMsZS5maW5pc2hlZD1pLGUuZGVzdHJveWVkPXMsbyVuJiZlLmJ1ZmZlci5zZXQociksZX19O3ZhciBNPW5ldyBVaW50OEFycmF5KFs3LDQsMTMsMSwxMCw2LDE1LDMsMTIsMCw5LDUsMiwxNCwxMSw4XSksST1VaW50OEFycmF5LmZyb20oe2xlbmd0aDoxNn0sKHQsZSk9PmUpLFg9SS5tYXAodD0+KDkqdCs1KSUxNiksXz1bSV0sRT1bWF07Zm9yKGxldCB0PTA7dDw0O3QrKylmb3IobGV0IGUgb2ZbXyxFXSllLnB1c2goZVt0XS5tYXAobj0+TVtuXSkpO3ZhciBqPVtbMTEsMTQsMTUsMTIsNSw4LDcsOSwxMSwxMywxNCwxNSw2LDcsOSw4XSxbMTIsMTMsMTEsMTUsNiw5LDksNywxMiwxNSwxMSwxMyw3LDgsNyw3XSxbMTMsMTUsMTQsMTEsNyw3LDYsOCwxMywxNCwxMywxMiw1LDUsNiw5XSxbMTQsMTEsMTIsMTQsOCw2LDUsNSwxNSwxMiwxNSwxNCw5LDksOCw2XSxbMTUsMTIsMTMsMTMsOSw1LDgsNiwxNCwxMSwxMiwxMSw4LDYsNSw1XV0ubWFwKHQ9Pm5ldyBVaW50OEFycmF5KHQpKSxxPV8ubWFwKCh0LGUpPT50Lm1hcChuPT5qW2VdW25dKSksdj1FLm1hcCgodCxlKT0+dC5tYXAobj0+altlXVtuXSkpLEo9bmV3IFVpbnQzMkFycmF5KFswLDE1MTg1MDAyNDksMTg1OTc3NTM5MywyNDAwOTU5NzA4LDI4NDA4NTM4MzhdKSxQPW5ldyBVaW50MzJBcnJheShbMTM1MjgyOTkyNiwxNTQ4NjAzNjg0LDE4MzYwNzI2OTEsMjA1Mzk5NDIxNywwXSksYj0odCxlKT0+dDw8ZXx0Pj4+MzItZTtmdW5jdGlvbiBPKHQsZSxuLHIpe3JldHVybiB0PT09MD9lXm5ecjp0PT09MT9lJm58fmUmcjp0PT09Mj8oZXx+bilecjp0PT09Mz9lJnJ8biZ+cjplXihufH5yKX12YXIgeD1uZXcgVWludDMyQXJyYXkoMTYpLEw9Y2xhc3MgZXh0ZW5kcyB5e2NvbnN0cnVjdG9yKCl7c3VwZXIoNjQsMjAsOCwhMCksdGhpcy5oMD0xNzMyNTg0MTkzLHRoaXMuaDE9LTI3MTczMzg3OSx0aGlzLmgyPS0xNzMyNTg0MTk0LHRoaXMuaDM9MjcxNzMzODc4LHRoaXMuaDQ9LTEwMDk1ODk3NzZ9Z2V0KCl7bGV0e2gwOmUsaDE6bixoMjpyLGgzOm8saDQ6aX09dGhpcztyZXR1cm5bZSxuLHIsbyxpXX1zZXQoZSxuLHIsbyxpKXt0aGlzLmgwPWV8MCx0aGlzLmgxPW58MCx0aGlzLmgyPXJ8MCx0aGlzLmgzPW98MCx0aGlzLmg0PWl8MH1wcm9jZXNzKGUsbil7Zm9yKGxldCBoPTA7aDwxNjtoKyssbis9NCl4W2hdPWUuZ2V0VWludDMyKG4sITApO2xldCByPXRoaXMuaDB8MCxvPXIsaT10aGlzLmgxfDAscz1pLGM9dGhpcy5oMnwwLHU9YyxwPXRoaXMuaDN8MCxkPXAsZj10aGlzLmg0fDAsYT1mO2ZvcihsZXQgaD0wO2g8NTtoKyspe2xldCBUPTQtaCxWPUpbaF0sJD1QW2hdLEM9X1toXSxSPUVbaF0sUz1xW2hdLEY9dltoXTtmb3IobGV0IGw9MDtsPDE2O2wrKyl7bGV0IG09YihyK08oaCxpLGMscCkreFtDW2xdXStWLFNbbF0pK2Z8MDtyPWYsZj1wLHA9YihjLDEwKXwwLGM9aSxpPW19Zm9yKGxldCBsPTA7bDwxNjtsKyspe2xldCBtPWIobytPKFQscyx1LGQpK3hbUltsXV0rJCxGW2xdKSthfDA7bz1hLGE9ZCxkPWIodSwxMCl8MCx1PXMscz1tfX10aGlzLnNldCh0aGlzLmgxK2MrZHwwLHRoaXMuaDIrcCthfDAsdGhpcy5oMytmK298MCx0aGlzLmg0K3Irc3wwLHRoaXMuaDAraSt1fDApfXJvdW5kQ2xlYW4oKXt4LmZpbGwoMCl9ZGVzdHJveSgpe3RoaXMuZGVzdHJveWVkPSEwLHRoaXMuYnVmZmVyLmZpbGwoMCksdGhpcy5zZXQoMCwwLDAsMCwwKX19LG90PWsoKCk9Pm5ldyBMKTtleHBvcnR7TCBhcyBSSVBFTUQxNjAsb3QgYXMgcmlwZW1kMTYwfTsKLyohIEJ1bmRsZWQgbGljZW5zZSBpbmZvcm1hdGlvbjoKCkBub2JsZS9oYXNoZXMvZXNtL3V0aWxzLmpzOgogICgqISBub2JsZS1oYXNoZXMgLSBNSVQgTGljZW5zZSAoYykgMjAyMiBQYXVsIE1pbGxlciAocGF1bG1pbGxyLmNvbSkgKikKKi8KLy8jIHNvdXJjZU1hcHBpbmdVUkw9cmlwZW1kMTYwLmJ1bmRsZS5tanMubWFw");
+
+            // Store in window for global access
+            window.secp256k1Lib = secp256k1;
+            window.ed25519Lib = ed25519;
+            window.noble_hashes_sha512 = sha512Mod.sha512;
+            window.keccak256Fn = sha3Mod.keccak_256;
+            window.ripemd160Fn = ripemd160Mod.ripemd160;
+
+            // Set up Ed25519 sha512Sync
+            if (ed25519.etc) {
+                ed25519.etc.sha512Sync = (...msgs) => {
+                    const msg =
+                        msgs.length === 1
+                            ? msgs[0]
+                            : msgs.reduce((acc, m) => {
+                                  const result = new Uint8Array(
+                                      acc.length + m.length,
+                                  );
+                                  result.set(acc);
+                                  result.set(m, acc.length);
+                                  return result;
+                              }, new Uint8Array(0));
+                    return sha512Mod.sha512(msg);
+                };
+            }
+
+            // Signal that libraries are loaded
+            window.cryptoLibsLoaded = true;
+            window.dispatchEvent(new Event("cryptoLibsLoaded"));
+        </script>
+
+        <script type="module">
+            // Wait for crypto libraries
+            async function waitForLibs() {
+                if (window.cryptoLibsLoaded) return;
+                return new Promise((resolve) => {
+                    window.addEventListener("cryptoLibsLoaded", resolve, {
+                        once: true,
+                    });
+                });
+            }
+
+            await waitForLibs();
+
+            // ==================== ENCODING ====================
+
+            function bytesToHex(bytes) {
+                return Array.from(bytes)
+                    .map((b) => b.toString(16).padStart(2, "0"))
+                    .join("");
+            }
+
+            function hexToBytes(hex) {
+                const normalized = hex.replace(/^0x/, "");
+                if (normalized.length % 2 !== 0)
+                    throw new Error("Invalid hex string");
+                const bytes = new Uint8Array(normalized.length / 2);
+                for (let i = 0; i < bytes.length; i++) {
+                    bytes[i] = parseInt(normalized.substr(i * 2, 2), 16);
+                }
+                return bytes;
+            }
+
+            function utf8ToBytes(str) {
+                return new TextEncoder().encode(str);
+            }
+
+            const BASE58_ALPHABET =
+                "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+            function base58Encode(bytes) {
+                if (bytes.length === 0) return "";
+                let leadingZeros = 0;
+                for (let i = 0; i < bytes.length && bytes[i] === 0; i++)
+                    leadingZeros++;
+                let num = BigInt(0);
+                for (let i = 0; i < bytes.length; i++)
+                    num = num * BigInt(256) + BigInt(bytes[i]);
+                let encoded = "";
+                while (num > 0) {
+                    encoded =
+                        BASE58_ALPHABET[Number(num % BigInt(58))] + encoded;
+                    num = num / BigInt(58);
+                }
+                return "1".repeat(leadingZeros) + encoded;
+            }
+
+            function uint32ToBytes(num, littleEndian = false) {
+                const bytes = new Uint8Array(4);
+                if (littleEndian) {
+                    bytes[0] = num & 0xff;
+                    bytes[1] = (num >> 8) & 0xff;
+                    bytes[2] = (num >> 16) & 0xff;
+                    bytes[3] = (num >> 24) & 0xff;
+                } else {
+                    bytes[0] = (num >> 24) & 0xff;
+                    bytes[1] = (num >> 16) & 0xff;
+                    bytes[2] = (num >> 8) & 0xff;
+                    bytes[3] = num & 0xff;
+                }
+                return bytes;
+            }
+
+            const BECH32_CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+            const BECH32_GENERATOR = [
+                0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3,
+            ];
+
+            function bech32Polymod(values) {
+                let chk = 1;
+                for (const value of values) {
+                    const top = chk >> 25;
+                    chk = ((chk & 0x1ffffff) << 5) ^ value;
+                    for (let i = 0; i < 5; i++) {
+                        if ((top >> i) & 1) chk ^= BECH32_GENERATOR[i];
+                    }
+                }
+                return chk;
+            }
+
+            function bech32HrpExpand(hrp) {
+                const result = [];
+                for (let i = 0; i < hrp.length; i++)
+                    result.push(hrp.charCodeAt(i) >> 5);
+                result.push(0);
+                for (let i = 0; i < hrp.length; i++)
+                    result.push(hrp.charCodeAt(i) & 31);
+                return result;
+            }
+
+            function bech32CreateChecksum(hrp, data, encoding) {
+                const values = bech32HrpExpand(hrp)
+                    .concat(data)
+                    .concat([0, 0, 0, 0, 0, 0]);
+                const constant = encoding === "bech32m" ? 0x2bc830a3 : 1;
+                const polymod = bech32Polymod(values) ^ constant;
+                const checksum = [];
+                for (let i = 0; i < 6; i++)
+                    checksum.push((polymod >> (5 * (5 - i))) & 31);
+                return checksum;
+            }
+
+            function bech32Encode(hrp, data, encoding = "bech32") {
+                const checksum = bech32CreateChecksum(hrp, data, encoding);
+                const combined = data.concat(checksum);
+                return (
+                    hrp + "1" + combined.map((d) => BECH32_CHARSET[d]).join("")
+                );
+            }
+
+            function convertBits(data, fromBits, toBits, pad = true) {
+                let acc = 0,
+                    bits = 0;
+                const result = [];
+                const maxv = (1 << toBits) - 1;
+                for (const value of data) {
+                    acc = (acc << fromBits) | value;
+                    bits += fromBits;
+                    while (bits >= toBits) {
+                        bits -= toBits;
+                        result.push((acc >> bits) & maxv);
+                    }
+                }
+                if (pad && bits > 0)
+                    result.push((acc << (toBits - bits)) & maxv);
+                return new Uint8Array(result);
+            }
+
+            // ==================== CRYPTO ====================
+
+            async function sha256(data) {
+                const buffer =
+                    data instanceof Uint8Array ? data : utf8ToBytes(data);
+                const hashBuffer = await crypto.subtle.digest(
+                    "SHA-256",
+                    buffer,
+                );
+                return new Uint8Array(hashBuffer);
+            }
+
+            async function hmacSHA512(key, data) {
+                const keyBuffer =
+                    key instanceof Uint8Array ? key : utf8ToBytes(key);
+                const dataBuffer =
+                    data instanceof Uint8Array ? data : utf8ToBytes(data);
+                const importedKey = await crypto.subtle.importKey(
+                    "raw",
+                    keyBuffer,
+                    { name: "HMAC", hash: "SHA-512" },
+                    false,
+                    ["sign"],
+                );
+                const signature = await crypto.subtle.sign(
+                    "HMAC",
+                    importedKey,
+                    dataBuffer,
+                );
+                return new Uint8Array(signature);
+            }
+
+            async function pbkdf2(
+                password,
+                salt,
+                iterations,
+                keyLen,
+                hashAlgo = "SHA-512",
+            ) {
+                const passwordBuffer =
+                    password instanceof Uint8Array
+                        ? password
+                        : utf8ToBytes(password);
+                const saltBuffer =
+                    salt instanceof Uint8Array ? salt : utf8ToBytes(salt);
+                const importedKey = await crypto.subtle.importKey(
+                    "raw",
+                    passwordBuffer,
+                    { name: "PBKDF2" },
+                    false,
+                    ["deriveBits"],
+                );
+                const derivedBits = await crypto.subtle.deriveBits(
+                    {
+                        name: "PBKDF2",
+                        salt: saltBuffer,
+                        iterations,
+                        hash: hashAlgo,
+                    },
+                    importedKey,
+                    keyLen * 8,
+                );
+                return new Uint8Array(derivedBits);
+            }
+
+            async function hash160(data) {
+                const sha = await sha256(data);
+                return window.ripemd160Fn(sha);
+            }
+
+            async function keccak256(data) {
+                return window.keccak256Fn(data);
+            }
+
+            const SECP256K1_N = BigInt(
+                "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
+            );
+
+            function addPrivateKeys(key1, key2) {
+                const k1 = BigInt("0x" + bytesToHex(key1));
+                const k2 = BigInt("0x" + bytesToHex(key2));
+                const sum = (k1 + k2) % SECP256K1_N;
+                return hexToBytes(sum.toString(16).padStart(64, "0"));
+            }
+
+            async function privateKeyToPublicKey(
+                privateKey,
+                compressed = true,
+            ) {
+                return window.secp256k1Lib.getPublicKey(privateKey, compressed);
+            }
+
+            async function ed25519GetPublicKey(privateKey) {
+                return window.ed25519Lib.getPublicKey(privateKey);
+            }
+
+            async function taggedHash(tag, msg) {
+                const tagHash = await sha256(utf8ToBytes(tag));
+                const combined = new Uint8Array(
+                    tagHash.length * 2 + msg.length,
+                );
+                combined.set(tagHash, 0);
+                combined.set(tagHash, tagHash.length);
+                combined.set(msg, tagHash.length * 2);
+                return await sha256(combined);
+            }
+
+            function hasEvenY(publicKey) {
+                if (publicKey.length === 33) return publicKey[0] === 0x02;
+                if (publicKey.length === 65) return publicKey[64] % 2 === 0;
+                return true;
+            }
+
+            async function taprootTweakPublicKey(publicKey) {
+                const xOnlyPubkey =
+                    publicKey.length === 33 ? publicKey.slice(1) : publicKey;
+                let workingPubkey = publicKey;
+                if (!hasEvenY(publicKey)) {
+                    workingPubkey = new Uint8Array(33);
+                    workingPubkey[0] = 0x02;
+                    workingPubkey.set(xOnlyPubkey, 1);
+                }
+                const tweak = await taggedHash("TapTweak", xOnlyPubkey);
+                const tweakBigInt = BigInt("0x" + bytesToHex(tweak));
+                try {
+                    const secp = window.secp256k1Lib;
+                    // Use ProjectivePoint for @noble/secp256k1 v2.0.0+
+                    const PointClass = secp.ProjectivePoint || secp.Point;
+                    if (PointClass) {
+                        const P = PointClass.fromHex(bytesToHex(workingPubkey));
+                        const tweakPoint =
+                            PointClass.BASE.multiply(tweakBigInt);
+                        const Q = P.add(tweakPoint);
+                        return Q.toRawBytes(true).slice(1);
+                    }
+                } catch (e) {
+                    console.warn("Taproot tweak failed:", e);
+                }
+                return xOnlyPubkey;
+            }
+
+            async function privateKeyToWIF(
+                privateKey,
+                compressed = true,
+                testnet = false,
+            ) {
+                const version = testnet ? 0xef : 0x80;
+                let payload;
+                if (compressed) {
+                    payload = new Uint8Array(34);
+                    payload[0] = version;
+                    payload.set(privateKey, 1);
+                    payload[33] = 0x01;
+                } else {
+                    payload = new Uint8Array(33);
+                    payload[0] = version;
+                    payload.set(privateKey, 1);
+                }
+                const hash1 = await sha256(payload);
+                const hash2 = await sha256(hash1);
+                const checksum = hash2.slice(0, 4);
+                const withChecksum = new Uint8Array(payload.length + 4);
+                withChecksum.set(payload);
+                withChecksum.set(checksum, payload.length);
+                return base58Encode(withChecksum);
+            }
+
+            // ==================== BIP39 ====================
+
+            let WORDLIST = null;
+
+            function loadWordlist(text) {
+                const words = text
+                    .trim()
+                    .split("\n")
+                    .map((w) => w.trim());
+                if (words.length !== 2048) throw new Error("Invalid wordlist");
+                WORDLIST = words;
+                return words;
+            }
+
+            function getWordlist() {
+                if (!WORDLIST) throw new Error("Wordlist not loaded");
+                return WORDLIST;
+            }
+
+            function bytesToBinary(bytes) {
+                return Array.from(bytes)
+                    .map((byte) => byte.toString(2).padStart(8, "0"))
+                    .join("");
+            }
+
+            async function entropyToMnemonic(entropy) {
+                const wordlist = getWordlist();
+                const entropyBits = entropy.length * 8;
+                const hash = await sha256(entropy);
+                const checksumBits = entropyBits / 32;
+                const checksumBinary = bytesToBinary(hash).slice(
+                    0,
+                    checksumBits,
+                );
+                const entropyBinary = bytesToBinary(entropy);
+                const fullBinary = entropyBinary + checksumBinary;
+                const words = [];
+                for (let i = 0; i < fullBinary.length; i += 11) {
+                    const index = parseInt(fullBinary.slice(i, i + 11), 2);
+                    words.push(wordlist[index]);
+                }
+                return words.join(" ");
+            }
+
+            function sanitizeMnemonic(mnemonic) {
+                return mnemonic.trim().toLowerCase().replace(/\s+/g, " ");
+            }
+
+            async function mnemonicToEntropy(mnemonic) {
+                const wordlist = getWordlist();
+                const words = sanitizeMnemonic(mnemonic).split(" ");
+                const indices = words.map((word) => {
+                    const index = wordlist.indexOf(word);
+                    if (index === -1) throw new Error("Invalid word: " + word);
+                    return index;
+                });
+                const binary = indices
+                    .map((i) => i.toString(2).padStart(11, "0"))
+                    .join("");
+                const checksumBits = words.length / 3;
+                const entropyBits = binary.length - checksumBits;
+                const entropyBinary = binary.slice(0, entropyBits);
+                const checksumBinary = binary.slice(entropyBits);
+                const bytes = [];
+                for (let i = 0; i < entropyBinary.length; i += 8) {
+                    bytes.push(parseInt(entropyBinary.slice(i, i + 8), 2));
+                }
+                const entropy = new Uint8Array(bytes);
+                const hash = await sha256(entropy);
+                const expectedChecksum = bytesToBinary(hash).slice(
+                    0,
+                    checksumBits,
+                );
+                if (checksumBinary !== expectedChecksum)
+                    throw new Error("Invalid checksum");
+                return entropy;
+            }
+
+            async function validateMnemonic(mnemonic) {
+                try {
+                    await mnemonicToEntropy(mnemonic);
+                    return true;
+                } catch {
+                    return false;
+                }
+            }
+
+            async function generateMnemonic(wordCount = 12) {
+                const bits = wordCount === 12 ? 128 : 256;
+                const entropy = new Uint8Array(bits / 8);
+                crypto.getRandomValues(entropy);
+                const mnemonic = await entropyToMnemonic(entropy);
+                return { mnemonic, entropy, entropyHex: bytesToHex(entropy) };
+            }
+
+            async function mnemonicToSeed(mnemonic, passphrase = "") {
+                const mnemonicNormalized = mnemonic.normalize("NFKD");
+                const passphraseNormalized = passphrase.normalize("NFKD");
+                const salt = "mnemonic" + passphraseNormalized;
+                return await pbkdf2(
+                    mnemonicNormalized,
+                    salt,
+                    2048,
+                    64,
+                    "SHA-512",
+                );
+            }
+
+            // ==================== BIP32 ====================
+
+            const HARDENED_OFFSET = 0x80000000;
+
+            class HDNode {
+                constructor(
+                    privateKey,
+                    chainCode,
+                    depth = 0,
+                    index = 0,
+                    parentFingerprint = 0,
+                ) {
+                    this.privateKey = privateKey;
+                    this.chainCode = chainCode;
+                    this.depth = depth;
+                    this.index = index;
+                    this.parentFingerprint = parentFingerprint;
+                    this._publicKey = null;
+                    this._fingerprint = null;
+                }
+
+                static async fromSeed(seed) {
+                    if (seed.length !== 64)
+                        throw new Error("Seed must be 64 bytes");
+                    const I = await hmacSHA512(
+                        utf8ToBytes("Bitcoin seed"),
+                        seed,
+                    );
+                    const privateKey = I.slice(0, 32);
+                    const chainCode = I.slice(32, 64);
+                    const keyInt = BigInt("0x" + bytesToHex(privateKey));
+                    if (keyInt === BigInt(0) || keyInt >= SECP256K1_N)
+                        throw new Error("Invalid private key");
+                    return new HDNode(privateKey, chainCode, 0, 0, 0);
+                }
+
+                async deriveChild(index) {
+                    const hardened = index >= HARDENED_OFFSET;
+                    let data;
+                    if (hardened) {
+                        data = new Uint8Array(37);
+                        data[0] = 0x00;
+                        data.set(this.privateKey, 1);
+                        data.set(uint32ToBytes(index), 33);
+                    } else {
+                        const publicKey = await this.getPublicKey(true);
+                        data = new Uint8Array(37);
+                        data.set(publicKey, 0);
+                        data.set(uint32ToBytes(index), 33);
+                    }
+                    const I = await hmacSHA512(this.chainCode, data);
+                    const childPrivateKey = addPrivateKeys(
+                        I.slice(0, 32),
+                        this.privateKey,
+                    );
+                    const fingerprint = await this.getFingerprint();
+                    return new HDNode(
+                        childPrivateKey,
+                        I.slice(32, 64),
+                        this.depth + 1,
+                        index,
+                        fingerprint,
+                    );
+                }
+
+                async derive(path) {
+                    if (!path.startsWith("m") && !path.startsWith("M"))
+                        throw new Error("Path must start with m");
+                    const segments = path.split("/").slice(1);
+                    let node = this;
+                    for (const segment of segments) {
+                        if (segment === "") continue;
+                        const hardened =
+                            segment.endsWith("'") || segment.endsWith("h");
+                        const index = parseInt(
+                            segment.replace(/['h]/g, ""),
+                            10,
+                        );
+                        if (isNaN(index) || index < 0)
+                            throw new Error("Invalid path segment");
+                        node = await node.deriveChild(
+                            hardened ? index + HARDENED_OFFSET : index,
+                        );
+                    }
+                    return node;
+                }
+
+                async getPublicKey(compressed = true) {
+                    if (!this._publicKey) {
+                        this._publicKey = await privateKeyToPublicKey(
+                            this.privateKey,
+                            compressed,
+                        );
+                    }
+                    return this._publicKey;
+                }
+
+                async getFingerprint() {
+                    if (this._fingerprint === null) {
+                        const publicKey = await this.getPublicKey(true);
+                        const hash = await hash160(publicKey);
+                        const bytes = hash.slice(0, 4);
+                        this._fingerprint =
+                            (bytes[0] << 24) |
+                            (bytes[1] << 16) |
+                            (bytes[2] << 8) |
+                            bytes[3];
+                    }
+                    return this._fingerprint;
+                }
+            }
+
+            // ==================== SLIP-0010 Ed25519 ====================
+
+            class Ed25519HDNode {
+                constructor(privateKey, chainCode) {
+                    this.privateKey = privateKey;
+                    this.chainCode = chainCode;
+                }
+
+                static async fromSeed(seed) {
+                    if (seed.length !== 64)
+                        throw new Error("Seed must be 64 bytes");
+                    const I = await hmacSHA512(
+                        utf8ToBytes("ed25519 seed"),
+                        seed,
+                    );
+                    return new Ed25519HDNode(I.slice(0, 32), I.slice(32, 64));
+                }
+
+                async deriveChild(index) {
+                    const hardenedIndex =
+                        index >= HARDENED_OFFSET
+                            ? index
+                            : index + HARDENED_OFFSET;
+                    const data = new Uint8Array(37);
+                    data[0] = 0x00;
+                    data.set(this.privateKey, 1);
+                    data.set(uint32ToBytes(hardenedIndex), 33);
+                    const I = await hmacSHA512(this.chainCode, data);
+                    return new Ed25519HDNode(I.slice(0, 32), I.slice(32, 64));
+                }
+
+                async derive(path) {
+                    if (!path.startsWith("m"))
+                        throw new Error("Path must start with m");
+                    const segments = path.split("/").slice(1);
+                    let node = this;
+                    for (const segment of segments) {
+                        if (segment === "") continue;
+                        const index = parseInt(
+                            segment.replace(/['h]/g, ""),
+                            10,
+                        );
+                        if (isNaN(index) || index < 0)
+                            throw new Error("Invalid path segment");
+                        node = await node.deriveChild(index);
+                    }
+                    return node;
+                }
+
+                async getPublicKey() {
+                    return await ed25519GetPublicKey(this.privateKey);
+                }
+            }
+
+            // ==================== ADDRESS DERIVATION ====================
+
+            const DERIVATION_PATHS = {
+                bitcoin: {
+                    legacy: (account, change, index) =>
+                        `m/44'/0'/${account}'/${change}/${index}`,
+                    nestedSegwit: (account, change, index) =>
+                        `m/49'/0'/${account}'/${change}/${index}`,
+                    nativeSegwit: (account, change, index) =>
+                        `m/84'/0'/${account}'/${change}/${index}`,
+                    taproot: (account, change, index) =>
+                        `m/86'/0'/${account}'/${change}/${index}`,
+                },
+                ethereum: (account, index) =>
+                    `m/44'/60'/${account}'/0/${index}`,
+                solana: (account, change) =>
+                    `m/44'/501'/${account}'/${change}'`,
+                tron: (account, index) => `m/44'/195'/${account}'/0/${index}`,
+            };
+
+            async function generateP2PKH(publicKey) {
+                const pubKeyHash = await hash160(publicKey);
+                const versionedPayload = new Uint8Array(21);
+                versionedPayload[0] = 0x00;
+                versionedPayload.set(pubKeyHash, 1);
+                const hash1 = await sha256(versionedPayload);
+                const hash2 = await sha256(hash1);
+                const addressBytes = new Uint8Array(25);
+                addressBytes.set(versionedPayload);
+                addressBytes.set(hash2.slice(0, 4), 21);
+                return base58Encode(addressBytes);
+            }
+
+            async function generateP2SH_P2WPKH(publicKey) {
+                const pubKeyHash = await hash160(publicKey);
+                const redeemScript = new Uint8Array(22);
+                redeemScript[0] = 0x00;
+                redeemScript[1] = 0x14;
+                redeemScript.set(pubKeyHash, 2);
+                const scriptHash = await hash160(redeemScript);
+                const versionedPayload = new Uint8Array(21);
+                versionedPayload[0] = 0x05;
+                versionedPayload.set(scriptHash, 1);
+                const hash1 = await sha256(versionedPayload);
+                const hash2 = await sha256(hash1);
+                const addressBytes = new Uint8Array(25);
+                addressBytes.set(versionedPayload);
+                addressBytes.set(hash2.slice(0, 4), 21);
+                return base58Encode(addressBytes);
+            }
+
+            async function generateP2WPKH(publicKey) {
+                const pubKeyHash = await hash160(publicKey);
+                const words = convertBits(pubKeyHash, 8, 5, true);
+                const data = new Uint8Array(words.length + 1);
+                data[0] = 0x00;
+                data.set(words, 1);
+                return bech32Encode("bc", Array.from(data), "bech32");
+            }
+
+            async function generateP2TR(publicKey) {
+                const xOnlyPubkey = await taprootTweakPublicKey(publicKey);
+                const words = convertBits(xOnlyPubkey, 8, 5, true);
+                const data = new Uint8Array(words.length + 1);
+                data[0] = 0x01;
+                data.set(words, 1);
+                return bech32Encode("bc", Array.from(data), "bech32m");
+            }
+
+            async function deriveBitcoinAddress(
+                rootNode,
+                type,
+                account = 0,
+                change = 0,
+                index = 0,
+            ) {
+                const pathFn =
+                    DERIVATION_PATHS.bitcoin[
+                        type === "nested-segwit"
+                            ? "nestedSegwit"
+                            : type === "native-segwit"
+                              ? "nativeSegwit"
+                              : type
+                    ];
+                const path = pathFn(account, change, index);
+                const node = await rootNode.derive(path);
+                const publicKey = await node.getPublicKey(true);
+                let address;
+                switch (type) {
+                    case "legacy":
+                        address = await generateP2PKH(publicKey);
+                        break;
+                    case "nested-segwit":
+                        address = await generateP2SH_P2WPKH(publicKey);
+                        break;
+                    case "native-segwit":
+                        address = await generateP2WPKH(publicKey);
+                        break;
+                    case "taproot":
+                        address = await generateP2TR(publicKey);
+                        break;
+                }
+                const wif = await privateKeyToWIF(node.privateKey, true, false);
+                return {
+                    address,
+                    privateKey: bytesToHex(node.privateKey),
+                    privateKeyWIF: wif,
+                    publicKey: bytesToHex(publicKey),
+                    path,
+                    type,
+                    account,
+                    change,
+                    index,
+                };
+            }
+
+            async function deriveBitcoinAddresses(
+                rootNode,
+                type,
+                account = 0,
+                change = 0,
+                startIndex = 0,
+                count = 5,
+            ) {
+                const addresses = [];
+                for (let i = startIndex; i < startIndex + count; i++) {
+                    addresses.push(
+                        await deriveBitcoinAddress(
+                            rootNode,
+                            type,
+                            account,
+                            change,
+                            i,
+                        ),
+                    );
+                }
+                return addresses;
+            }
+
+            async function deriveEthereumAddress(
+                rootNode,
+                account = 0,
+                index = 0,
+            ) {
+                const path = DERIVATION_PATHS.ethereum(account, index);
+                const node = await rootNode.derive(path);
+                const publicKey = await node.getPublicKey(false);
+                const pubKeyWithoutPrefix = publicKey.slice(1);
+                const hash = await keccak256(pubKeyWithoutPrefix);
+                const addressBytes = hash.slice(-20);
+                const addr = bytesToHex(addressBytes);
+                const hashForChecksum = await keccak256(utf8ToBytes(addr));
+                const hashHex = bytesToHex(hashForChecksum);
+                let checksummed = "0x";
+                for (let i = 0; i < addr.length; i++) {
+                    checksummed +=
+                        parseInt(hashHex[i], 16) >= 8
+                            ? addr[i].toUpperCase()
+                            : addr[i];
+                }
+                return {
+                    address: checksummed,
+                    privateKey: "0x" + bytesToHex(node.privateKey),
+                    publicKey: "0x" + bytesToHex(publicKey),
+                    path,
+                    account,
+                    index,
+                };
+            }
+
+            async function deriveEthereumAddresses(
+                rootNode,
+                account = 0,
+                startIndex = 0,
+                count = 5,
+            ) {
+                const addresses = [];
+                for (let i = startIndex; i < startIndex + count; i++) {
+                    addresses.push(
+                        await deriveEthereumAddress(rootNode, account, i),
+                    );
+                }
+                return addresses;
+            }
+
+            async function deriveSolanaAddress(seed, account = 0, change = 0) {
+                const path = DERIVATION_PATHS.solana(account, change);
+                const masterNode = await Ed25519HDNode.fromSeed(seed);
+                const node = await masterNode.derive(path);
+                const publicKey = await node.getPublicKey();
+                const address = base58Encode(publicKey);
+                const fullPrivateKey = new Uint8Array(64);
+                fullPrivateKey.set(node.privateKey, 0);
+                fullPrivateKey.set(publicKey, 32);
+                return {
+                    address,
+                    privateKey: base58Encode(fullPrivateKey),
+                    publicKey: base58Encode(publicKey),
+                    privateKeyHex: bytesToHex(node.privateKey),
+                    publicKeyHex: bytesToHex(publicKey),
+                    path,
+                    account,
+                    index: account,
+                };
+            }
+
+            async function deriveSolanaAddresses(
+                seed,
+                startAccount = 0,
+                count = 5,
+            ) {
+                const addresses = [];
+                for (let i = startAccount; i < startAccount + count; i++) {
+                    addresses.push(await deriveSolanaAddress(seed, i));
+                }
+                return addresses;
+            }
+
+            async function deriveTronAddress(rootNode, account = 0, index = 0) {
+                const path = DERIVATION_PATHS.tron(account, index);
+                const node = await rootNode.derive(path);
+                const publicKey = await node.getPublicKey(false);
+                const pubKeyWithoutPrefix = publicKey.slice(1);
+                const hash = await keccak256(pubKeyWithoutPrefix);
+                const addressBytes = hash.slice(-20);
+                const addressWithPrefix = new Uint8Array(21);
+                addressWithPrefix[0] = 0x41;
+                addressWithPrefix.set(addressBytes, 1);
+                const hash1 = await sha256(addressWithPrefix);
+                const hash2 = await sha256(hash1);
+                const addressWithChecksum = new Uint8Array(25);
+                addressWithChecksum.set(addressWithPrefix);
+                addressWithChecksum.set(hash2.slice(0, 4), 21);
+                return {
+                    address: base58Encode(addressWithChecksum),
+                    privateKey: "0x" + bytesToHex(node.privateKey),
+                    publicKey: "0x" + bytesToHex(publicKey),
+                    path,
+                    account,
+                    index,
+                };
+            }
+
+            async function deriveTronAddresses(
+                rootNode,
+                account = 0,
+                startIndex = 0,
+                count = 5,
+            ) {
+                const addresses = [];
+                for (let i = startIndex; i < startIndex + count; i++) {
+                    addresses.push(
+                        await deriveTronAddress(rootNode, account, i),
+                    );
+                }
+                return addresses;
+            }
+
+            // ==================== UI ====================
+
+            const state = {
+                mnemonic: null,
+                passphrase: "",
+                seed: null,
+                rootNode: null,
+                currentChain: "bitcoin",
+                bitcoinAddressType: "native-segwit",
+                addressStart: 0,
+                addressBatch: 20,
+                addresses: [],
+                wordCount: 12,
+            };
+
+            function showToast(message, type = "info") {
+                let container = document.querySelector(".toast-container");
+                if (!container) {
+                    container = document.createElement("div");
+                    container.className = "toast-container";
+                    document.body.appendChild(container);
+                }
+                const toast = document.createElement("div");
+                toast.className = "toast " + type;
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = "0";
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            async function copyToClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } catch {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = text;
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(textarea);
+                    return true;
+                }
+            }
+
+            function renderApp() {
+                const app = document.getElementById("app");
+                app.innerHTML = `
+        <div class="header">
+          <h1>🔐 Mnemonic Generator</h1>
+          <p>Secure, offline, multi-chain HD wallet generator</p>
+        </div>
+        <div class="security-warning">
+          <strong>Security Warning:</strong> This tool generates real cryptocurrency private keys.
+          Always use in an offline environment. Never share your mnemonic or private keys.
+        </div>
+        <div class="card">
+          <h2 class="card-title">Step 1: Generate or Import Mnemonic</h2>
+          <div class="form-group">
+            <label class="form-label">Word Count</label>
+            <select id="wordCount" class="form-input">
+              <option value="12">12 words (128-bit)</option>
+              <option value="24">24 words (256-bit)</option>
+            </select>
+          </div>
+          <button id="generateBtn" class="button button-primary">Generate New Mnemonic</button>
+          <h3 style="margin-top: 2rem;">Or Import Existing Mnemonic</h3>
+          <div class="form-group">
+            <label class="form-label">Mnemonic Phrase</label>
+            <textarea id="importMnemonic" class="form-input" rows="3" placeholder="Enter your 12 or 24 word mnemonic phrase..."></textarea>
+          </div>
+          <button id="importBtn" class="button button-secondary">Import Mnemonic</button>
+        </div>
+        <div id="mnemonicDisplay" style="display: none;"></div>
+        <div id="passphraseSection" style="display: none;"></div>
+        <div id="chainSection" style="display: none;"></div>
+        <div class="footer">Created by L</div>
+      `;
+
+                document
+                    .getElementById("generateBtn")
+                    .addEventListener("click", async () => {
+                        const wordCount = parseInt(
+                            document.getElementById("wordCount").value,
+                        );
+                        const result = await generateMnemonic(wordCount);
+                        state.mnemonic = result.mnemonic;
+                        state.wordCount = wordCount;
+                        state.passphrase = "";
+                        state.addressStart = 0;
+                        state.addresses = [];
+                        showToast("Mnemonic generated!", "success");
+                        showMnemonicAndContinue();
+                    });
+
+                document
+                    .getElementById("importBtn")
+                    .addEventListener("click", async () => {
+                        const mnemonic = document
+                            .getElementById("importMnemonic")
+                            .value.trim();
+                        if (!mnemonic) {
+                            showToast("Please enter a mnemonic", "error");
+                            return;
+                        }
+                        const isValid = await validateMnemonic(mnemonic);
+                        if (!isValid) {
+                            showToast("Invalid mnemonic phrase", "error");
+                            return;
+                        }
+                        state.mnemonic = mnemonic;
+                        state.passphrase = "";
+                        state.addressStart = 0;
+                        state.addresses = [];
+                        showToast("Mnemonic imported!", "success");
+                        showMnemonicAndContinue();
+                    });
+            }
+
+            function showMnemonicAndContinue() {
+                state.passphrase = "";
+                state.addressStart = 0;
+                state.addresses = [];
+                const words = state.mnemonic.split(" ");
+                const mnemonicDisplay =
+                    document.getElementById("mnemonicDisplay");
+                mnemonicDisplay.style.display = "block";
+                mnemonicDisplay.innerHTML = `
+        <div class="card">
+          <h2 class="card-title">Your Mnemonic Phrase</h2>
+          <div class="mnemonic-grid">
+            ${words.map((word, i) => `<div class="mnemonic-word"><span class="mnemonic-word-index">${i + 1}</span><span class="mnemonic-word-text">${word}</span></div>`).join("")}
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+            <button id="regenBtn" class="button button-secondary">Generate New</button>
+            <button id="copyMnemonicBtn" class="button button-secondary">📋 Copy Mnemonic</button>
+          </div>
+        </div>
+      `;
+
+                document
+                    .getElementById("regenBtn")
+                    .addEventListener("click", async () => {
+                        const result = await generateMnemonic(state.wordCount);
+                        state.mnemonic = result.mnemonic;
+                        state.passphrase = "";
+                        state.addressStart = 0;
+                        state.addresses = [];
+                        showMnemonicAndContinue();
+                    });
+
+                document
+                    .getElementById("copyMnemonicBtn")
+                    .addEventListener("click", () => {
+                        copyToClipboard(state.mnemonic);
+                        showToast("Mnemonic copied.", "success");
+                    });
+
+                showPassphraseSection();
+                showChainSection();
+                // Reset address state before deriving
+                state.addresses = [];
+                state.addressStart = 0;
+                deriveAddresses({ reset: true, showToast: true });
+            }
+
+            function showPassphraseSection() {
+                const section = document.getElementById("passphraseSection");
+                section.style.display = "block";
+                section.innerHTML = `
+        <div class="card">
+          <h2 class="card-title">Step 2: Optional Passphrase</h2>
+          <div class="form-group">
+            <label class="form-label">Passphrase (Advanced)</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="password" id="passphrase" class="form-input" placeholder="Optional passphrase (leave empty for none)">
+              <button id="togglePassphrase" class="button button-secondary button-small">Show</button>
+            </div>
+            <div class="form-hint">Adds extra security but makes recovery harder. Leave empty if unsure.</div>
+          </div>
+          <button id="applyPassphrase" class="button button-primary">Apply Passphrase</button>
+        </div>
+      `;
+
+                document
+                    .getElementById("togglePassphrase")
+                    .addEventListener("click", () => {
+                        const input = document.getElementById("passphrase");
+                        const btn = document.getElementById("togglePassphrase");
+                        if (input.type === "password") {
+                            input.type = "text";
+                            btn.textContent = "Hide";
+                        } else {
+                            input.type = "password";
+                            btn.textContent = "Show";
+                        }
+                    });
+
+                document
+                    .getElementById("applyPassphrase")
+                    .addEventListener("click", () => {
+                        state.passphrase =
+                            document.getElementById("passphrase").value;
+                        state.addressStart = 0;
+                        state.addresses = [];
+                        deriveAddresses({ reset: true, showToast: true });
+                    });
+            }
+
+            function showChainSection() {
+                const section = document.getElementById("chainSection");
+                section.style.display = "block";
+                section.innerHTML = `
+        <div class="card">
+          <h2 class="card-title">Step 3: Derive Addresses</h2>
+          <div class="tabs">
+            <button class="tab" data-chain="bitcoin">Bitcoin</button>
+            <button class="tab" data-chain="ethereum">Ethereum</button>
+            <button class="tab" data-chain="solana">Solana</button>
+            <button class="tab" data-chain="tron">Tron</button>
+          </div>
+          <div id="bitcoinTypeSelector" class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Address Type</label>
+            <select id="btcAddressType" class="form-input">
+              <option value="legacy">Legacy (P2PKH)</option>
+              <option value="nested-segwit">Nested SegWit (P2SH)</option>
+              <option value="native-segwit" selected>Native SegWit (P2WPKH)</option>
+              <option value="taproot">Taproot (P2TR)</option>
+            </select>
+          </div>
+          <div id="addressContainer"></div>
+        </div>
+      `;
+
+                document.querySelectorAll(".tab").forEach((tab) => {
+                    tab.addEventListener("click", () => {
+                        document
+                            .querySelectorAll(".tab")
+                            .forEach((t) => t.classList.remove("active"));
+                        tab.classList.add("active");
+                        state.currentChain = tab.dataset.chain;
+                        state.addressStart = 0;
+                        state.addresses = [];
+                        document.getElementById(
+                            "bitcoinTypeSelector",
+                        ).style.display =
+                            state.currentChain === "bitcoin" ? "block" : "none";
+                        deriveAddresses({ reset: true, showToast: true });
+                    });
+                });
+
+                const activeChain = state.currentChain || "bitcoin";
+                const activeTab = document.querySelector(
+                    `.tab[data-chain="${activeChain}"]`,
+                );
+                if (activeTab) {
+                    activeTab.classList.add("active");
+                }
+                document.getElementById("bitcoinTypeSelector").style.display =
+                    activeChain === "bitcoin" ? "block" : "none";
+
+                document
+                    .getElementById("btcAddressType")
+                    .addEventListener("change", (e) => {
+                        state.bitcoinAddressType = e.target.value;
+                        state.addressStart = 0;
+                        state.addresses = [];
+                        deriveAddresses({ reset: true, showToast: true });
+                    });
+            }
+
+            async function deriveAddresses(options = {}) {
+                const opts =
+                    options && options.type && options.target ? {} : options;
+                const { reset = false, showToast: showSuccessToast = false } =
+                    opts || {};
+                if (!state.mnemonic) return;
+                const container = document.getElementById("addressContainer");
+                container.innerHTML =
+                    '<div class="loading"><div class="spinner"></div><div>Generating...</div></div>';
+
+                try {
+                    if (reset) {
+                        state.addressStart = 0;
+                        state.addresses = [];
+                    }
+                    state.seed = await mnemonicToSeed(
+                        state.mnemonic,
+                        state.passphrase,
+                    );
+                    state.rootNode = await HDNode.fromSeed(state.seed);
+
+                    let newAddresses;
+                    switch (state.currentChain) {
+                        case "bitcoin":
+                            newAddresses = await deriveBitcoinAddresses(
+                                state.rootNode,
+                                state.bitcoinAddressType,
+                                0,
+                                0,
+                                state.addressStart,
+                                state.addressBatch,
+                            );
+                            break;
+                        case "ethereum":
+                            newAddresses = await deriveEthereumAddresses(
+                                state.rootNode,
+                                0,
+                                state.addressStart,
+                                state.addressBatch,
+                            );
+                            break;
+                        case "solana":
+                            newAddresses = await deriveSolanaAddresses(
+                                state.seed,
+                                state.addressStart,
+                                state.addressBatch,
+                            );
+                            break;
+                        case "tron":
+                            newAddresses = await deriveTronAddresses(
+                                state.rootNode,
+                                0,
+                                state.addressStart,
+                                state.addressBatch,
+                            );
+                            break;
+                    }
+
+                    state.addresses = state.addresses.concat(newAddresses);
+                    state.addressStart += state.addressBatch;
+                    renderAddresses(container);
+                    if (showSuccessToast) {
+                        showToast(
+                            "Addresses refreshed successfully.",
+                            "success",
+                        );
+                    }
+                } catch (e) {
+                    container.innerHTML =
+                        '<p style="color: var(--accent-danger);">Error: ' +
+                        e.message +
+                        "</p>";
+                    console.error(e);
+                }
+            }
+
+            function renderAddresses(container) {
+                container.innerHTML = `
+        <table class="address-table">
+          <thead>
+            <tr><th>#</th><th>Address</th><th>Path</th><th>Private Key</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            ${state.addresses
+                .map(
+                    (addr, i) => `
+              <tr>
+                <td data-label="#">#${addr.index ?? addr.account ?? i}</td>
+                <td data-label="Address" class="address-value-cell">
+                  <div class="address-key-value" style="cursor:pointer" onclick="copyAddr('${addr.address}')">${addr.address}</div>
+                </td>
+                <td data-label="Path">${addr.path}</td>
+                <td data-label="Private Key" class="address-value-cell">
+                  <div class="address-key-value masked" onclick="this.classList.toggle('masked'); copyPrivateKey('${(addr.privateKeyWIF || addr.privateKey).replace(/'/g, "\\'")}');">${addr.privateKeyWIF || addr.privateKey}</div>
+                </td>
+                <td data-label="Actions">
+                  <button class="button button-small button-secondary" onclick="copyAddr('${addr.address}')">Copy Addr</button>
+                  <button class="button button-small button-secondary" onclick="copyPrivateKey('${(addr.privateKeyWIF || addr.privateKey).replace(/'/g, "\\'")}')">Copy Key</button>
+                </td>
+              </tr>
+            `,
+                )
+                .join("")}
+          </tbody>
+        </table>
+        <button id="loadMoreBtn" class="button button-secondary" style="width: 100%; margin-top: 1rem;">Load More Addresses</button>
+      `;
+
+                document
+                    .getElementById("loadMoreBtn")
+                    .addEventListener("click", deriveAddresses);
+            }
+
+            window.copyAddr = function (text) {
+                copyToClipboard(text);
+                showToast("Address copied!", "success");
+            };
+
+            window.copyPrivateKey = function (text) {
+                copyToClipboard(text);
+                showToast("Private key copied.", "success");
+            };
+
+            // Initialize
+            loadWordlist(window.EMBEDDED_WORDLIST);
+            renderApp();
+        </script>
+    </body>
+</html>

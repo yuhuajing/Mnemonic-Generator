@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Secure offline mnemonic generator for Bitcoin, Ethereum, Solana, and Tron">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:;">
+  <title>Mnemonic Generator - Secure HD Wallet Tool</title>
+  <link rel="stylesheet" href="ui/styles.css">
+
+  <!-- Import map for dependency resolution - can be switched to local paths -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@noble/secp256k1": "./vendor/secp256k1.js",
+      "@noble/ed25519": "./vendor/ed25519.js",
+      "@noble/hashes/sha512": "./vendor/sha512.js",
+      "@noble/hashes/sha3": "./vendor/sha3.js",
+      "@noble/hashes/ripemd160": "./vendor/ripemd160.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>Loading application...</div>
+    </div>
+  </div>
+
+  <script type="module" src="ui/app.js"></script>
+</body>
+</html>

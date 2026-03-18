@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Taproot Debug</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #e0e0e0; }
+    .result { margin: 5px 0; padding: 5px; background: #2a2a2a; }
+    .match { color: #00ff00; }
+    .mismatch { color: #ff0000; }
+    h2 { color: #d4af37; }
+  </style>
+</head>
+<body>
+  <h1>Taproot Address Derivation Debug</h1>
+  <div id="output">Loading...</div>
+
+  <script type="module">
+    // Official BIP86 test vector
+    const TEST_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    const EXPECTED_INTERNAL_KEY = 'cc8a4bc64d897bddc5fbc2f670f7a8ba0b386779106cf1223c6fc5d7cd6fc115';
+    const EXPECTED_OUTPUT_KEY = 'a60869f0dbcf1dc659c9cecbaf8050135ea9e8cdc487053f1dc6880949dc684c';
+    const EXPECTED_TAPROOT = 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr';
+
+    const output = document.getElementById('output');
+    function log(msg, className = '') {
+      const div = document.createElement('div');
+      div.className = 'result ' + className;
+      div.textContent = msg;
+      output.appendChild(div);
+    }
+
+    async function main() {
+      output.innerHTML = '';
+      log('Loading noble libraries from CDN...');
+
+      try {
+        const secp = await import('https://esm.sh/@noble/secp256k1@2.0.0');
+        const hashes = await import('https://esm.sh/@noble/hashes@1.3.3/sha256');
+        const sha512Mod = await import('https://esm.sh/@noble/hashes@1.3.3/sha512');
+        const pbkdf2Mod = await import('https://esm.sh/@noble/hashes@1.3.3/pbkdf2');
+        const hmacMod = await import('https://esm.sh/@noble/hashes@1.3.3/hmac');
+
+        const { sha256 } = hashes;
+        const { sha512 } = sha512Mod;
+        const { pbkdf2 } = pbkdf2Mod;
+        const { hmac } = hmacMod;
+
+        log('secp256k1 exports: ' + Object.keys(secp).join(', '));
+        log('Has ProjectivePoint: ' + !!secp.ProjectivePoint);
+
+        // Helpers
+        const bytesToHex = bytes => Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        const hexToBytes = hex => { const b = new Uint8Array(hex.length / 2); for (let i = 0; i < b.length; i++) b[i] = parseInt(hex.substr(i * 2, 2), 16); return b; };
+        const utf8ToBytes = str => new TextEncoder().encode(str);
+        const hmacSHA512 = (key, data) => hmac(sha512, key, data);
+
+        // Mnemonic to seed
+        const mnemonicToSeed = (mnemonic, passphrase = '') => {
+          return pbkdf2(sha512, utf8ToBytes(mnemonic), utf8ToBytes('mnemonic' + passphrase), { c: 2048, dkLen: 64 });
+        };
+
+        // BIP32
+        const HARDENED = 0x80000000;
+        const SECP256K1_N = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141');
+        const uint32ToBytes = n => new Uint8Array([(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]);
+        const addPrivateKeys = (k1, k2) => {
+          const sum = (BigInt('0x' + bytesToHex(k1)) + BigInt('0x' + bytesToHex(k2))) % SECP256K1_N;
+          return hexToBytes(sum.toString(16).padStart(64, '0'));
+        };
+
+        class HDNode {
+          constructor(pk, cc) { this.privateKey = pk; this.chainCode = cc; }
+          static fromSeed(seed) {
+            const I = hmacSHA512(utf8ToBytes('Bitcoin seed'), seed);
+            return new HDNode(I.slice(0, 32), I.slice(32, 64));
+          }
+          getPublicKey() { return secp.getPublicKey(this.privateKey, true); }
+          deriveChild(index) {
+            const hardened = index >= HARDENED;
+            const data = new Uint8Array(37);
+            if (hardened) {
+              data[0] = 0x00;
+              data.set(this.privateKey, 1);
+            } else {
+              data.set(this.getPublicKey(), 0);
+            }
+            data.set(uint32ToBytes(index), 33);
+            const I = hmacSHA512(this.chainCode, data);
+            return new HDNode(addPrivateKeys(I.slice(0, 32), this.privateKey), I.slice(32, 64));
+          }
+          derive(path) {
+            let node = this;
+            for (const seg of path.split('/').slice(1)) {
+              const h = seg.endsWith("'");
+              const idx = parseInt(seg.replace("'", ''), 10);
+              node = node.deriveChild(h ? idx + HARDENED : idx);
+            }
+            return node;
+          }
+        }
+
+        // Tagged hash
+        const taggedHash = (tag, msg) => {
+          const tagHash = sha256(utf8ToBytes(tag));
+          const combined = new Uint8Array(64 + msg.length);
+          combined.set(tagHash, 0);
+          combined.set(tagHash, 32);
+          combined.set(msg, 64);
+          return sha256(combined);
+        };
+
+        // Bech32m
+        const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+        const GEN = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+        const polymod = vals => { let c = 1; for (const v of vals) { const t = c >> 25; c = (c & 0x1ffffff) << 5 ^ v; for (let i = 0; i < 5; i++) if ((t >> i) & 1) c ^= GEN[i]; } return c; };
+        const hrpExpand = hrp => [...hrp].map(c => c.charCodeAt(0) >> 5).concat([0]).concat([...hrp].map(c => c.charCodeAt(0) & 31));
+        const bech32Encode = (hrp, data, m) => {
+          const vals = hrpExpand(hrp).concat(data).concat([0,0,0,0,0,0]);
+          const p = polymod(vals) ^ (m ? 0x2bc830a3 : 1);
+          const cs = [0,1,2,3,4,5].map(i => (p >> 5 * (5 - i)) & 31);
+          return hrp + '1' + data.concat(cs).map(d => CHARSET[d]).join('');
+        };
+        const convertBits = (data, from, to) => {
+          let acc = 0, bits = 0, result = [];
+          for (const v of data) { acc = (acc << from) | v; bits += from; while (bits >= to) { bits -= to; result.push((acc >> bits) & ((1 << to) - 1)); } }
+          if (bits > 0) result.push((acc << (to - bits)) & ((1 << to) - 1));
+          return result;
+        };
+
+        // === Run Test ===
+        log('');
+        log('=== Taproot Derivation Debug ===');
+        log('Mnemonic: ' + TEST_MNEMONIC);
+        log('Expected: ' + EXPECTED_TAPROOT);
+
+        const seed = mnemonicToSeed(TEST_MNEMONIC, '');
+        log('1. Seed: ' + bytesToHex(seed));
+
+        const rootNode = HDNode.fromSeed(seed);
+        log('2. Root privkey: ' + bytesToHex(rootNode.privateKey));
+
+        const node = rootNode.derive("m/86'/0'/0'/0/0");
+        log('3. Derived privkey: ' + bytesToHex(node.privateKey));
+
+        const pubkey = node.getPublicKey();
+        log('4. Public key: ' + bytesToHex(pubkey));
+        log('   Prefix: 0x' + pubkey[0].toString(16) + ' (even Y: ' + (pubkey[0] === 0x02) + ')');
+
+        const xOnly = pubkey.slice(1);
+        log('5. X-only: ' + bytesToHex(xOnly));
+
+        const tweak = taggedHash('TapTweak', xOnly);
+        log('6. Tweak: ' + bytesToHex(tweak));
+
+        // Use even Y point
+        let workingPubkey = pubkey;
+        if (pubkey[0] !== 0x02) {
+          workingPubkey = new Uint8Array(33);
+          workingPubkey[0] = 0x02;
+          workingPubkey.set(xOnly, 1);
+          log('   -> Negated to even Y');
+        }
+
+        const PointClass = secp.ProjectivePoint;
+        const tweakBigInt = BigInt('0x' + bytesToHex(tweak));
+        log('7. Tweak BigInt: ' + tweakBigInt.toString(16).slice(0, 20) + '...');
+
+        const P = PointClass.fromHex(bytesToHex(workingPubkey));
+        const tweakPoint = PointClass.BASE.multiply(tweakBigInt);
+        const Q = P.add(tweakPoint);
+
+        const tweakedPubkey = Q.toRawBytes(true);
+        log('8. Tweaked pubkey: ' + bytesToHex(tweakedPubkey));
+
+        const tweakedX = tweakedPubkey.slice(1);
+        log('9. Tweaked X-only: ' + bytesToHex(tweakedX));
+
+        const words = convertBits(Array.from(tweakedX), 8, 5);
+        const address = bech32Encode('bc', [0x01].concat(words), true);
+
+        log('');
+        log('=== Comparison ===');
+        const internalKeyMatch = bytesToHex(xOnly) === EXPECTED_INTERNAL_KEY;
+        log('Internal Key:  ' + bytesToHex(xOnly), internalKeyMatch ? 'match' : 'mismatch');
+        log('Expected:      ' + EXPECTED_INTERNAL_KEY, internalKeyMatch ? 'match' : 'mismatch');
+
+        const outputKeyMatch = bytesToHex(tweakedX) === EXPECTED_OUTPUT_KEY;
+        log('Output Key:    ' + bytesToHex(tweakedX), outputKeyMatch ? 'match' : 'mismatch');
+        log('Expected:      ' + EXPECTED_OUTPUT_KEY, outputKeyMatch ? 'match' : 'mismatch');
+
+        const addressMatch = address === EXPECTED_TAPROOT;
+        log('Address:       ' + address, addressMatch ? 'match' : 'mismatch');
+        log('Expected:      ' + EXPECTED_TAPROOT, addressMatch ? 'match' : 'mismatch');
+
+        log('');
+        if (internalKeyMatch && outputKeyMatch && addressMatch) {
+          log('✓ All tests passed!', 'match');
+        } else {
+          log('✗ Some tests failed!', 'mismatch');
+        }
+
+      } catch (e) {
+        log('ERROR: ' + e.message, 'mismatch');
+        console.error(e);
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
